@@ -16,6 +16,128 @@ class DataValidationError(Exception):
     """Used for an data validation errors when deserializing"""
 
 
+class CreditCardMethod(db.Model):
+    """
+    Class that represents a CreditCardMethod
+    """
+
+    ##################################################
+    # Table Schema
+    ##################################################
+    id = db.Column(db.Integer, primary_key=True)
+    payment_method_id = db.Column(db.Integer)
+    first_name = db.Column(db.String(50), nullable=False)
+    last_name = db.Column(db.String(50), nullable=False)
+    card_number = db.Column(db.String(16), nullable=False)
+    expiry_month = db.Column(db.String(2), nullable=False)
+    expiry_year = db.Column(db.String(2), nullable=False)
+    security_code = db.Column(db.String(3), nullable=False)
+    billing_address = db.Column(db.String(80), nullable=False)
+    zip_code = db.Column(db.String(10), nullable=False)
+
+    def __repr__(self):
+        return f"<CreditCardMethod {self.name} id=[{self.id}]>"
+
+    def create(self):
+        """
+        Creates a CreditCardMethod to the database
+        """
+        logger.info("Creating %s", self.name)
+        self.id = None  # pylint: disable=invalid-name
+        try:
+            db.session.add(self)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            logger.error("Error creating record: %s", self)
+            raise DataValidationError(e) from e
+
+    def update(self):
+        """
+        Updates a CreditCardMethod to the database
+        """
+        logger.info("Saving %s", self.name)
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            logger.error("Error updating record: %s", self)
+            raise DataValidationError(e) from e
+
+    def delete(self):
+        """Removes a CreditCardMethod from the data store"""
+        logger.info("Deleting %s", self.name)
+        try:
+            db.session.delete(self)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            logger.error("Error deleting record: %s", self)
+            raise DataValidationError(e) from e
+
+    def serialize(self):
+        """Serializes a CreditCardMethod into a dictionary"""
+        return {
+            "id": self.id,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "card_number": self.card_number,
+            "expiry_month": self.expiry_month,
+            "expiry_year": self.expiry_year,
+            "security_code": self.security_code,
+            "billing_address": self.billing_address,
+            "zip_code": self.zip_code,
+        }
+
+    def deserialize(self, data):
+        """
+        Deserializes a CreditCardMethod from a dictionary
+
+        Args:
+            data (dict): A dictionary containing the resource data
+        """
+        try:
+            self.name = data["name"]
+        except AttributeError as error:
+            raise DataValidationError("Invalid attribute: " + error.args[0]) from error
+        except KeyError as error:
+            raise DataValidationError(
+                "Invalid PaymentMethod: missing " + error.args[0]
+            ) from error
+        except TypeError as error:
+            raise DataValidationError(
+                "Invalid PaymentMethod: body of request contained bad or no data "
+                + str(error)
+            ) from error
+        return self
+
+    ##################################################
+    # CLASS METHODS
+    ##################################################
+
+    @classmethod
+    def all(cls):
+        """Returns all of the CreditCardMethod in the database"""
+        logger.info("Processing all CreditCardMethod")
+        return cls.query.all()
+
+    @classmethod
+    def find(cls, by_id):
+        """Finds a CreditCardMethod by its ID"""
+        logger.info("Processing lookup for id %s ...", by_id)
+        return cls.query.get(by_id)
+
+    @classmethod
+    def find_by_name(cls, name):
+        """Returns all CreditCardMethod with the given name
+
+        Args:
+            name (string): the name of the PaymentMethods you want to match
+        """
+        logger.info("Processing name query for %s ...", name)
+        return cls.query.filter(cls.name == name)
+
+
 class PaymentMethod(db.Model):
     """
     Class that represents a PaymentMethod
