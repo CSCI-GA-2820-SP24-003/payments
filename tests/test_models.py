@@ -12,7 +12,6 @@ DATABASE_URI = os.getenv(
 
 from service.models import (
     PaymentMethod,
-    CreditCardMethod,
     PaymentType,
     DataValidationError,
     db,
@@ -20,7 +19,7 @@ from service.models import (
 
 
 ######################################################################
-#  YourResourceModel   M O D E L   T E S T   C A S E S
+#  PaymentMethod   M O D E L   T E S T   C A S E S
 ######################################################################
 # pylint: disable=too-many-public-methods
 class TestCaseBase(TestCase):
@@ -44,7 +43,6 @@ class TestCaseBase(TestCase):
     def setUp(self):
         """This runs before each test"""
         db.session.query(PaymentMethod).delete()  # clean up the last tests
-        db.session.query(CreditCardMethod).delete()  # clean up the last tests
         db.session.commit()
 
     def tearDown(self):
