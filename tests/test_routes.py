@@ -56,12 +56,16 @@ class TestYourResourceService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
         methods = data["methods"]
-        self.assertEqual(data["status"], 200)
+        self.assertEqual(data["status"], status.HTTP_200_OK)
+        self.assertEqual(data["name"], "Payments service")
+        self.assertEqual(data["version"], "1.0")
         self.assertEqual(len(methods), 5)
 
         # check if root path has definitions for all methods
         def is_path_and_method_in_list(path, method):
-            return any(item.path == path and item.method == method for item in methods)
+            return any(
+                item["path"] == path and item["method"] == method for item in methods
+            )
 
         self.assertTrue(
             is_path_and_method_in_list(path="/payment-methods", method="GET")
