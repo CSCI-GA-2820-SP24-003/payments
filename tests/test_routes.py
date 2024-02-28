@@ -18,7 +18,7 @@ DATABASE_URI = os.getenv(
 #  T E S T   C A S E S
 ######################################################################
 # pylint: disable=too-many-public-methods
-class TestYourResourceService(TestCase):
+class TestPaymentsService(TestCase):
     """REST API Server Tests"""
 
     @classmethod
