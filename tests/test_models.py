@@ -1,6 +1,7 @@
 """
 Test cases for PaymentMethod Model
 """
+
 import os
 import logging
 from unittest import TestCase
@@ -60,7 +61,7 @@ class TestPaymentMethodModel(TestCaseBase):
         """It should Create a payment and assert that it exists"""
         payment = PaymentMethod(
             name="payment1",
-            payment_type=PaymentType.CREDITCARD,
+            payment_type=PaymentType.CREDIT_CARD,
             payment_type_id=1,
             user_id=1,
         )
@@ -68,7 +69,7 @@ class TestPaymentMethodModel(TestCaseBase):
         self.assertTrue(payment is not None)
         self.assertEqual(payment.id, None)
         self.assertEqual(payment.name, "payment1")
-        self.assertEqual(payment.payment_type, PaymentType.CREDITCARD)
+        self.assertEqual(payment.payment_type, PaymentType.CREDIT_CARD)
         self.assertEqual(payment.payment_type_id, 1)
         self.assertEqual(payment.user_id, 1)
         payment = PaymentMethod(
@@ -129,17 +130,17 @@ class TestPaymentMethodModel(TestCaseBase):
         # logging.debug(payment)
         self.assertIsNotNone(payment.id)
         # Change it and save it
-        payment.payment_type = PaymentType.CREDITCARD
+        payment.payment_type = PaymentType.CREDIT_CARD
         original_id = payment.id
         payment.update()
         self.assertEqual(payment.id, original_id)
-        self.assertEqual(payment.payment_type, PaymentType.CREDITCARD)
+        self.assertEqual(payment.payment_type, PaymentType.CREDIT_CARD)
         # Fetch it back and make sure the id hasn't changed
         # but the data did change
         payments = PaymentMethod.all()
         self.assertEqual(len(payments), 1)
         self.assertEqual(payments[0].id, original_id)
-        self.assertEqual(payments[0].payment_type, PaymentType.CREDITCARD)
+        self.assertEqual(payments[0].payment_type, PaymentType.CREDIT_CARD)
 
     def test_update_no_id(self):
         """It should not Update a PaymentMethod with no id"""
@@ -157,7 +158,7 @@ class TestPaymentMethodModel(TestCaseBase):
         """It should Delete a PaymentMethod"""
         payment = PaymentMethod(
             name="payment1",
-            payment_type=PaymentType.CREDITCARD,
+            payment_type=PaymentType.CREDIT_CARD,
             payment_type_id=1,
             user_id=1,
         )
@@ -172,7 +173,7 @@ class TestPaymentMethodModel(TestCaseBase):
         payments = PaymentMethod.all()
         self.assertEqual(payments, [])
         # Create 5 PaymentMethods
-        payment_types = [PaymentType.CREDITCARD, PaymentType.PAYPAL]
+        payment_types = [PaymentType.CREDIT_CARD, PaymentType.PAYPAL]
         for i in range(5):
             payment = PaymentMethod(
                 name="payment_" + str(i),
