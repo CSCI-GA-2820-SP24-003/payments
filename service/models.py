@@ -21,7 +21,7 @@ class PaymentType(Enum):
     """Enumeration of valid payment types"""
 
     UNKNOWN = 0
-    CREDITCARD = 1
+    CREDIT_CARD = 1
     PAYPAL = 2
 
 
