@@ -15,7 +15,7 @@
 ######################################################################
 
 """
-Pet Store Service
+Payments Service
 
 This service implements a REST API that allows you to Create, Read, Update
 and Delete Pets from the inventory of pets in the PetShop
@@ -23,7 +23,7 @@ and Delete Pets from the inventory of pets in the PetShop
 
 from flask import jsonify, request, abort
 from flask import current_app as app  # Import Flask application
-from service.models import YourResourceModel
+from service.models import PaymentMethod
 from service.common import status  # HTTP Status Codes
 
 
