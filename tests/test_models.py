@@ -6,16 +6,17 @@ import os
 import logging
 from unittest import TestCase
 from wsgi import app
-
-DATABASE_URI = os.getenv(
-    "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/postgres"
-)
-
 from service.models import (
     PaymentMethod,
     PaymentType,
+    CreditCard,
     DataValidationError,
     db,
+)
+from tests.factories import CreditCardFactory
+
+DATABASE_URI = os.getenv(
+    "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/postgres"
 )
 
 
@@ -248,3 +249,49 @@ class TestPaymentMethodModel(TestCaseBase):
         data["payment_type"] = "paypal"  # wrong case
         payment = PaymentMethod()
         self.assertRaises(DataValidationError, payment.deserialize, data)
+
+
+class TestCreditCardModel(TestCaseBase):
+    """CreditCard Model CRUD Tests"""
+
+    ######################################################################
+    #  T E S T   C A S E S
+    ######################################################################
+
+    def test_create_a_credit_card(self):
+        """It should Create a credit card and assert that it exists"""
+        fake_credit_card = CreditCardFactory()
+        print(fake_credit_card.card_number)
+        credit_card = CreditCard(
+            payment_method_id=fake_credit_card.payment_method_id,
+            first_name=fake_credit_card.first_name,
+            last_name=fake_credit_card.last_name,
+            card_number=fake_credit_card.card_number,
+            expiry_month=fake_credit_card.expiry_month,
+            expiry_year=fake_credit_card.expiry_year,
+            security_code=fake_credit_card.security_code,
+            billing_address=fake_credit_card.billing_address,
+            zip_code=fake_credit_card.zip_code,
+        )
+        self.assertEqual(
+            str(credit_card),
+            f"<CreditCard **** **** **** {fake_credit_card.card_number[-4:]} id=[None]>",
+        )
+        self.assertTrue(credit_card is not None)
+        self.assertEqual(credit_card.id, None)
+        self.assertEqual(
+            credit_card.payment_method_id, fake_credit_card.payment_method_id
+        )
+        self.assertEqual(credit_card.first_name, fake_credit_card.first_name)
+        self.assertEqual(credit_card.last_name, fake_credit_card.last_name)
+        self.assertEqual(credit_card.card_number, fake_credit_card.card_number)
+        self.assertEqual(credit_card.expiry_month, fake_credit_card.expiry_month)
+        self.assertEqual(credit_card.expiry_year, fake_credit_card.expiry_year)
+        self.assertEqual(credit_card.security_code, fake_credit_card.security_code)
+        self.assertEqual(credit_card.billing_address, fake_credit_card.billing_address)
+        self.assertEqual(credit_card.zip_code, fake_credit_card.zip_code)
+
+    def test_add_a_credit_card(self):
+        """It should add a Credit Card to database"""
+        credit_cards = CreditCard.all()
+        self.assertEqual(credit_cards, [])
