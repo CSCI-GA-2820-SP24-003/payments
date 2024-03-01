@@ -15,13 +15,13 @@
 ######################################################################
 
 """
-Pet Store Service
+Payments Service
 
 This service implements a REST API that allows you to Create, Read, Update
 and Delete Pets from the inventory of pets in the PetShop
 """
 
-from flask import jsonify, request, url_for, abort
+from flask import jsonify, request, abort
 from flask import current_app as app  # Import Flask application
 from service.models import PaymentMethod
 from service.common import status  # HTTP Status Codes
@@ -33,8 +33,57 @@ from service.common import status  # HTTP Status Codes
 @app.route("/")
 def index():
     """Root URL response"""
+    app.logger.info("Request for root URL")
     return (
-        "Reminder: return some useful information in json format about the service here",
+        jsonify(
+            name="Payments service",
+            version="1.0",
+            status=status.HTTP_200_OK,
+            methods=list(
+                [
+                    {
+                        "path": "/payment-methods",
+                        "method": "GET",
+                        "operation": "Read",
+                        "description": "List all payment methods for a user",
+                        "request_body": "None",
+                        "response_body": "Payment method records",
+                    },
+                    {
+                        "path": "/payment-method/:id",
+                        "method": "GET",
+                        "operation": "Read",
+                        "description": "Provide detailed information about an existing payment method",
+                        "request_body": "None",
+                        "response_body": "Payment method record",
+                    },
+                    {
+                        "path": "/payment-method",
+                        "method": "POST",
+                        "operation": "Create",
+                        "description": "Create a payment method",
+                        "request_body": "Payment method record",
+                        "response_body": "None",
+                    },
+                    {
+                        "path": "/payment-method/:id",
+                        "method": "PUT",
+                        "operation": "Update",
+                        "description": "Update a given payment method",
+                        "request_body": "Payment method record",
+                        "response_body": "None",
+                    },
+                    {
+                        "path": "/payment-method/:id",
+                        "method": "DELETE",
+                        "operation": "Delete",
+                        "description": "Delete a given payment method",
+                        "request_body": "None",
+                        "response_body": "None",
+                    },
+                ]
+            ),
+        ),
         status.HTTP_200_OK,
     )
 
