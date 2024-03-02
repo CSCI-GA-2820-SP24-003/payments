@@ -9,6 +9,37 @@ from wsgi import app
 from service.common import status
 from service.models import db, PaymentMethod
 
+######################################################################
+#  T E S T   C A S E S
+######################################################################
+# pylint: disable=too-many-public-methods
+class TestPaymentsService(TestCase):
+    """REST API Server Tests"""
+
+    @classmethod
+    def setUpClass(cls):
+        """Run once before all tests"""
+        app.config["TESTING"] = True
+        app.config["DEBUG"] = False
+        # Set up the test database
+        app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URI
+        app.logger.setLevel(logging.CRITICAL)
+        app.app_context().push()
+
+    @classmethod
+    def tearDownClass(cls):
+        """Run once after all tests"""
+        db.session.close()
+
+    def setUp(self):
+        """Runs before each test"""
+        self.client = app.test_client()
+        db.session.query(PaymentMethod).delete()  # clean up the last tests
+        db.session.commit()
+
+    def tearDown(self):
+        """This runs after each test"""
+        db.session.remove()
 
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/postgres"
@@ -19,7 +50,6 @@ BASE_URL = "/payments"
     #  P L A C E   T E S T   C A S E S   H E R E
     ######################################################################
 
-    
 
     def test_update_payment(self):
         """It should Update an existing Payment"""
@@ -46,5 +76,25 @@ BASE_URL = "/payments"
         self.assertEqual(data["name"], "Payments service")
         self.assertEqual(data["version"], "1.0")
         self.assertEqual(len(methods), 5)
+    # check if root path has definitions for all methods
+        def is_path_and_method_in_list(path, method):
+            return any(
+                item["path"] == path and item["method"] == method for item in methods
+            )
 
+        self.assertTrue(
+            is_path_and_method_in_list(path="/payment-methods", method="GET")
+        )
+        self.assertTrue(
+            is_path_and_method_in_list(path="/payment-method/:id", method="GET")
+        )
+        self.assertTrue(
+            is_path_and_method_in_list(path="/payment-method", method="POST")
+        )
+        self.assertTrue(
+            is_path_and_method_in_list(path="/payment-method/:id", method="DELETE")
+        )
+        self.assertTrue(
+            is_path_and_method_in_list(path="/payment-method/:id", method="PUT")
+        )
        
