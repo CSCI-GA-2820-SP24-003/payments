@@ -13,7 +13,7 @@ DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/postgres"
 )
 
-BASE_URL = "/payment-methods"
+BASE_URL = "/payment-method"
 
 
 ######################################################################
@@ -94,3 +94,4 @@ class TestPaymentsService(TestCase):
         # make sure they are deleted
         response = self.client.get(f"{BASE_URL}/{test_payment.id}")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        

@@ -96,20 +96,20 @@ def index():
 
 
 ######################################################################
-# DELETE A PET
+# DELETE A PAYMENT METHOD
 ######################################################################
-@app.route("/payment-methods/<int:payment_id>", methods=["DELETE"])
-def delete_payments(payment_id):
+@app.route("/payment-method/<int:id>", methods=["DELETE"])
+def delete_payment_method(id):
     """
-    Delete a Payment
+    Delete a Payment Method
 
-    This endpoint will delete a Payment based the id specified in the path
+    This endpoint will delete a Payment Method based the id specified in the path
     """
-    app.logger.info("Request to delete payment with id: %d", payment_id)
+    app.logger.info("Request to delete payment with id: %d", id)
 
-    payment = PaymentMethod.find(payment_id)
+    payment = PaymentMethod.find(id)
     if payment:
         payment.delete()
 
-    app.logger.info("Payment with ID: %d delete complete.", payment_id)
+    app.logger.info("Payment with ID: %d delete complete.", id)
     return "", status.HTTP_204_NO_CONTENT
