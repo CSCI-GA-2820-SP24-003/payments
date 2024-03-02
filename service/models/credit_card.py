@@ -1,5 +1,5 @@
 """
-Models for PaymentMethod
+Models for CreditCard
 
 All of the models are stored in this module
 """
