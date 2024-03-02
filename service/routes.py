@@ -15,60 +15,45 @@
 ######################################################################
 
 """
-Payment Store Service
+
 
 This service implements a REST API that allows you to Create, Read, Update
 and Delete Payments from the inventory of payments in the PaymentShop
 """
 
-from flask import jsonify, request, url_for, abort
+from flask import jsonify, request, abort
 from flask import current_app as app  # Import Flask application
-from service.models import YourResourceModel
+from service.models import PaymentMethod
 from service.common import status  # HTTP Status Codes
 
 
-######################################################################
-# GET INDEX
-######################################################################
-@app.route("/")
-def index():
-    """Root URL response"""
-    return (
-        "Reminder: return some useful information in json format about the service here",
-        status.HTTP_200_OK,
-    )
-
-
-######################################################################
-#  R E S T   A P I   E N D P O I N T S
-######################################################################
 
 
 ######################################################################
 # UPDATE AN EXISTING Payment
 ######################################################################
 @app.route("/payments/<int:payment_id>", methods=["PUT"])
-def update_payments(payment_id):
+def update_payments(id):
     """
     Update a Payment
 
     This endpoint will update a Payment based the body that is posted
     """
-    app.logger.info("Request to update payment with id: %d", payment_id)
+    app.logger.info("Request to update payment with id: %d", id)
     check_content_type("application/json")
 
-    payment = payment.find(payment_id)
+    payment = PaymentMethod.find(id)
     if not payment:
         error(
-            status.HTTP_404_NOT_FOUND, f"Payment with id: '{payment_id}' was not found."
+            status.HTTP_404_NOT_FOUND, f"Payment with id: '{id}' was not found."
         )
 
-    payment.deserialize(request.get_json())
-    payment.id = payment_id
-    payment.update()
+    PaymentMethod.deserialize(request.get_json())
+    PaymentMethod.id = id
+    PaymentMethod.update()
 
-    app.logger.info("Payment with ID: %d updated.", payment.id)
-    return jsonify(payment.serialize()), status.HTTP_200_OK
+    app.logger.info("Payment with ID: %d updated.", PaymentMethod.id)
+    return jsonify(PaymentMethod.serialize()), status.HTTP_200_OK
 
 
 ######################################################################
