@@ -94,4 +94,3 @@ class TestPaymentsService(TestCase):
         # make sure they are deleted
         response = self.client.get(f"{BASE_URL}/{test_payment.id}")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        
