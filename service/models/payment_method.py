@@ -68,7 +68,7 @@ class PaymentMethod(db.Model):
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            logger.error("Error creating record: %s", self)
+            logger.error("Error creating PaymentMethod record: %s", self)
             raise DataValidationError(e) from e
 
     def update(self) -> None:
@@ -93,7 +93,7 @@ class PaymentMethod(db.Model):
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            logger.error("Error deleting record: %s", self)
+            logger.error("Error deleting PaymentMethod: %s", self)
             raise DataValidationError(e) from e
 
     ##################################################
@@ -102,14 +102,14 @@ class PaymentMethod(db.Model):
 
     @classmethod
     def all(cls):
-        """Returns all of the records in the database"""
+        """Returns all of the PaymentMethod records in the database"""
         logger.info("Processing all records")
         # pylint: disable=no-member
         return cls.query.all()
 
     @classmethod
     def find(cls, by_id):
-        """Finds a record by it's ID"""
+        """Finds PaymentMethod by its ID"""
         logger.info("Processing lookup for id %s ...", by_id)
         # pylint: disable=no-member
         return cls.query.session.get(cls, by_id)
