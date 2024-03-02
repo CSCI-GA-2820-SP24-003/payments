@@ -155,7 +155,7 @@ class CreditCard(PaymentMethod):
             raise FieldValidationError("ZIP code field must be numeric")
 
         if not len(zip_code) == 5:
-            raise FieldValidationError("ZIP code field must be 3 digits")
+            raise FieldValidationError("ZIP code field must be 5 digits")
 
         return zip_code
 
