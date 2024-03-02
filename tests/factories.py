@@ -19,10 +19,10 @@ from datetime import date
 
 import factory
 from factory.fuzzy import FuzzyChoice, FuzzyDate
-from service.models import Pet, Gender
+from service.models import PaymentMethod
 
 
-class PetFactory(factory.Factory):
+class PaymentFactory(factory.Factory):
     """Creates fake pets that you don't have to feed"""
 
     class Meta:  # pylint: disable=too-few-public-methods
