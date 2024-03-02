@@ -5,7 +5,7 @@ All of the models are stored in this module
 """
 
 from sqlalchemy.orm import validates
-from .persistent_base import PersistentBase, DataValidationError, db
+from .payment_method import PaymentMethod, DataValidationError, PaymentMethodType, db
 
 
 class FieldValidationError(Exception):
@@ -16,16 +16,15 @@ EXPIRY_MONTH_CONSTRAINTS = [1, 12]
 EXPIRY_YEAR_CONSTRAINTS = [2024, 2050]
 
 
-class CreditCard(db.Model, PersistentBase):
+class CreditCard(PaymentMethod):
     """
-    Class that represents a CreditCard type
+    Class that represents CreditCard resource
     """
 
     ##################################################
-    # Table Schema
+    # TABLE SCHEMA
     ##################################################
-    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    payment_method_id = db.Column(db.Integer, nullable=False)
+
     first_name = db.Column(db.String(32), nullable=False)
     last_name = db.Column(db.String(32), nullable=False)
     card_number = db.Column(db.String(16), nullable=False)
@@ -41,14 +40,14 @@ class CreditCard(db.Model, PersistentBase):
     billing_address = db.Column(db.Text, nullable=False)
     zip_code = db.Column(db.String(5), nullable=False)
 
-    def __repr__(self):
-        return f"<CreditCard **** **** **** {self.card_number[-4:]} id=[{self.id}]>"
+    __mapper_args__ = {"polymorphic_identity": PaymentMethodType.CREDIT_CARD}
 
     def serialize(self):
-        """Serializes a PaymentMethod into a dictionary"""
+        """Serializes a CreditCard into a dictionary"""
         return {
             "id": self.id,
-            "payment_method_id": self.payment_method_id,
+            "name": self.name,
+            "type": self.type,
             "first_name": self.first_name,
             "last_name": self.last_name,
             "card_number": self.card_number,
@@ -61,14 +60,15 @@ class CreditCard(db.Model, PersistentBase):
 
     def deserialize(self, data):
         """
-        Deserializes a PaymentMethod from a dictionary
+        Deserializes a CreditCard from a dictionary
 
         Args:
             data (dict): A dictionary containing the resource data
         """
         try:
             self.id = data["id"]
-            self.payment_method_id = data["payment_method_id"]
+            self.name = data["name"]
+            self.type = data["type"]
             self.first_name = data["first_name"]
             self.last_name = data["last_name"]
             self.card_number = data["card_number"]
@@ -97,7 +97,7 @@ class CreditCard(db.Model, PersistentBase):
     @validates("first_name")
     def validate_first_name(self, _key, first_name):
         """Validates `first_name` field"""
-        if not first_name.isalpha():
+        if is_not_str(first_name) or not first_name.isalpha():
             raise FieldValidationError("First name field must contain letters only")
 
         return first_name
@@ -105,7 +105,7 @@ class CreditCard(db.Model, PersistentBase):
     @validates("last_name")
     def validate_last_name(self, _key, last_name):
         """Validates `last_name` field"""
-        if not last_name.isalpha():
+        if is_not_str(last_name) or not last_name.isalpha():
             raise FieldValidationError("Last name field must contain letters only")
 
         return last_name
@@ -113,7 +113,7 @@ class CreditCard(db.Model, PersistentBase):
     @validates("card_number")
     def validate_card_number(self, _key, card_number):
         """Validates `card_number` field"""
-        if not card_number.isdigit():
+        if is_not_str(card_number) or not card_number.isdigit():
             raise FieldValidationError("Card number field must be numeric")
 
         if not len(card_number) == 16:
@@ -124,7 +124,7 @@ class CreditCard(db.Model, PersistentBase):
     @validates("security_code")
     def validate_security_code(self, _key, security_code):
         """Validates `security_code` field"""
-        if not security_code.isdigit():
+        if is_not_str(security_code) or not security_code.isdigit():
             raise FieldValidationError("Security code field must be numeric")
 
         if not len(security_code) == 3:
@@ -135,7 +135,7 @@ class CreditCard(db.Model, PersistentBase):
     @validates("expiry_year")
     def validate_expiry_year(self, _key, expiry_year):
         """Validates `expiry_year` field"""
-        if expiry_year < 2024 or expiry_year > 2050:
+        if is_not_int(expiry_year) or expiry_year < 2024 or expiry_year > 2050:
             raise FieldValidationError("Expiry year field is invalid")
 
         return expiry_year
@@ -143,7 +143,7 @@ class CreditCard(db.Model, PersistentBase):
     @validates("expiry_month")
     def validate_expiry_month(self, _key, expiry_month):
         """Validates `expiry_month` field"""
-        if expiry_month < 1 or expiry_month > 12:
+        if is_not_int(expiry_month) or expiry_month < 1 or expiry_month > 12:
             raise FieldValidationError("Expiry month field is invalid")
 
         return expiry_month
@@ -151,10 +151,20 @@ class CreditCard(db.Model, PersistentBase):
     @validates("zip_code")
     def validate_zip_code(self, _key, zip_code):
         """Validates `zip_code` field"""
-        if not zip_code.isdigit():
+        if is_not_str(zip_code) or not zip_code.isdigit():
             raise FieldValidationError("ZIP code field must be numeric")
 
         if not len(zip_code) == 5:
             raise FieldValidationError("ZIP code field must be 3 digits")
 
         return zip_code
+
+
+def is_not_int(value):
+    """Returns whether value is not an int"""
+    return not isinstance(value, int)
+
+
+def is_not_str(value):
+    """Returns whether value is not a str"""
+    return not isinstance(value, str)
