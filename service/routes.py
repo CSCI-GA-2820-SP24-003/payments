@@ -21,11 +21,18 @@ This service implements a REST API that allows you to Create, Read, Update
 and Delete Payments from the inventory of payments in the PaymentShop
 """
 
-from flask import jsonify, request, abort
+from flask import Flask, jsonify, request, abort
 from flask import current_app as app  # Import Flask application
 from service.models import PaymentMethod
 from service.common import status  # HTTP Status Codes
+import logging
+from flask_sqlalchemy import SQLAlchemy
+from enum import Enum
 
+app = Flask(__name__)
+
+logger = logging.getLogger("flask.app")
+db = SQLAlchemy(app)
 GET INDEX
 # UPDATE AN EXISTING Payment
 ######################################################################
@@ -91,24 +98,24 @@ def index():
 # UPDATE AN EXISTING Payment
 ######################################################################
 @app.route("/payments/<int:payment_id>", methods=["PUT"])
-def update_payments(id):
+def update_payments(payment_id):
     """
     Update a Payment
 
     This endpoint will update a Payment based the body that is posted
     """
-    app.logger.info("Request to update payment with id: %d", id)
+    app.logger.info("Request to update payment with id: %d", payment_id)
     check_content_type("application/json")
 
-    payment = PaymentMethod.find(id)
+    payment = PaymentMethod.find(payment_id)
     if not payment:
         error(
-            status.HTTP_404_NOT_FOUND, f"Payment with id: '{id}' was not found."
+            status.HTTP_404_NOT_FOUND, f"Payment with id: '{payment_id}' was not found."
         )
 
-    PaymentMethod.deserialize(request.get_json())
-    PaymentMethod.id = id
-    PaymentMethod.update()
+    payment.deserialize(request.get_json())
+    payment.id = id
+    payment.update()
 
     app.logger.info("Payment with ID: %d updated.", PaymentMethod.id)
     return jsonify(PaymentMethod.serialize()), status.HTTP_200_OK
