@@ -73,9 +73,9 @@ class CreditCard(PaymentMethod):
             data (dict): A dictionary containing the resource data
         """
         try:
-            self.id = data["id"]
             self.name = data["name"]
             self.type = data["type"]
+            self.user_id = data["user_id"]
             self.first_name = data["first_name"]
             self.last_name = data["last_name"]
             self.card_number = data["card_number"]

@@ -25,6 +25,10 @@ class PaymentMethodType(Enum):
     CREDIT_CARD = "CREDIT_CARD"
     PAYPAL = "PAYPAL"
 
+    def to_json(self):
+        """Returns its own name when serializing"""
+        return self.name
+
 
 class PaymentMethod(db.Model):
     """Class that represents Payment Method resource"""

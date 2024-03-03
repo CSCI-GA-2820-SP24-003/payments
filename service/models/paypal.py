@@ -48,9 +48,9 @@ class PayPal(PaymentMethod):
             data (dict): A dictionary containing the resource data
         """
         try:
-            self.id = data["id"]
             self.name = data["name"]
             self.type = data["type"]
+            self.user_id = data["user_id"]
             self.email = data["email"]
         except AttributeError as error:
             raise DataValidationError("Invalid attribute: " + error.args[0]) from error
