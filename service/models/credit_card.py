@@ -26,7 +26,11 @@ class CreditCard(PaymentMethod):
     # TABLE SCHEMA
     ##################################################
 
-    id = db.Column(db.Integer, db.ForeignKey('payment_method.id', ondelete='CASCADE'), primary_key=True)
+    id = db.Column(
+        db.Integer,
+        db.ForeignKey("payment_method.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
     first_name = db.Column(db.String(32), nullable=False)
     last_name = db.Column(db.String(32), nullable=False)
     card_number = db.Column(db.String(16), nullable=False)
@@ -50,6 +54,7 @@ class CreditCard(PaymentMethod):
             "id": self.id,
             "name": self.name,
             "type": self.type,
+            "user_id": self.user_id,
             "first_name": self.first_name,
             "last_name": self.last_name,
             "card_number": self.card_number,

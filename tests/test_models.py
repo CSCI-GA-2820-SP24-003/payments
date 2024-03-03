@@ -21,7 +21,7 @@ from tests.factories import (
 )
 
 DATABASE_URI = os.getenv(
-    "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/testdb"
+    "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/postgres"
 )
 
 
@@ -93,13 +93,14 @@ class TestPaymentMethodModel(TestCaseBase):
 
     def test_create_invalid_payment_method(self):
         """It should not create a PaymentMethod with invalid data"""
-        payment_method = PaymentMethod(name='')
+        payment_method = PaymentMethod(name="")
         with self.assertRaises(DataValidationError):
             payment_method.create()
 
 
 class TestPayPalModel(TestCaseBase):
     """PayPal Model CRUD Tests"""
+
     def test_deserialize_paypal(self):
         """It should deserialize a correct PayPal object"""
         fake_paypal = PayPalFactory()
@@ -112,13 +113,13 @@ class TestPayPalModel(TestCaseBase):
         self.assertEqual(paypal.type, PaymentMethodType.PAYPAL)
         self.assertEqual(paypal.email, fake_paypal.email)
 
-    def test_deserialize_credit_card_missing_data(self):
+    def test_deserialize_paypal_missing_data(self):
         """It should not deserialize a PayPal with missing data"""
         data = {"name": "abc"}
         paypal = PayPal()
         self.assertRaises(DataValidationError, paypal.deserialize, data)
 
-    def test_deserialize_credit_card_wrong_data(self):
+    def test_deserialize_paypal_wrong_data(self):
         """It should not deserialize a PayPal with missing data"""
         data = PayPalFactory().serialize()
         del data["email"]

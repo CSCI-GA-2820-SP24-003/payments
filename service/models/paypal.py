@@ -21,7 +21,11 @@ class PayPal(PaymentMethod):
     # TABLE SCHEMA
     ##################################################
 
-    id = db.Column(db.Integer, db.ForeignKey('payment_method.id', ondelete='CASCADE'), primary_key=True)
+    id = db.Column(
+        db.Integer,
+        db.ForeignKey("payment_method.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
     email = db.Column(db.String, nullable=False)
 
     __mapper_args__ = {"polymorphic_identity": PaymentMethodType.PAYPAL}
@@ -32,6 +36,7 @@ class PayPal(PaymentMethod):
             "id": self.id,
             "name": self.name,
             "type": self.type,
+            "user_id": self.user_id,
             "email": self.email,
         }
 
