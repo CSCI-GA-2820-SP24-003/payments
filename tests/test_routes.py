@@ -100,4 +100,5 @@ BASE_URL = "/payments"
         self.assertTrue(
             is_path_and_method_in_list(path="/payment-method/:id", method="PUT")
         )
-       
+        updated_payment = response.get_json()
+        self.assertEqual(updated_payment["name"], test_payment.name)
