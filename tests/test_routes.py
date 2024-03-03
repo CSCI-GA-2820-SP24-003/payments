@@ -50,10 +50,15 @@ BASE_URL = "/payments"
     #  P L A C E   T E S T   C A S E S   H E R E
     ######################################################################
     def test_index(self):
-        """ It should call the home page """
-        resp = self.client.get("/")
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
-
+        """It should call the home page and receive information about existing methods"""
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        methods = data["methods"]
+        self.assertEqual(data["status"], status.HTTP_200_OK)
+        self.assertEqual(data["name"], "Payments service")
+        self.assertEqual(data["version"], "1.0")
+        self.assertEqual(len(methods), 5)
     def test_update_payment(self):
         """It should Update an existing Payment"""
         # create a payment to update
@@ -69,16 +74,7 @@ BASE_URL = "/payments"
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         updated_payment = response.get_json()
         self.assertEqual(updated_payment["name"], test_payment.name)
-        
-        """It should call the home page and receive information about existing methods"""
-        response = self.client.get("/")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        data = response.get_json()
-        methods = data["methods"]
-        self.assertEqual(data["status"], status.HTTP_200_OK)
-        self.assertEqual(data["name"], "Payments service")
-        self.assertEqual(data["version"], "1.0")
-        self.assertEqual(len(methods), 5)
+   
     # check if root path has definitions for all methods
         def is_path_and_method_in_list(path, method):
             return any(
