@@ -16,14 +16,13 @@
 Test Factory to make fake objects for testing
 """
 from datetime import date
-
 import factory
-from factory.fuzzy import FuzzyChoice, FuzzyDate
-from service.models import PaymentMethod
+from factory.fuzzy import FuzzyChoice, FuzzyDate, FuzzyInteger
+from service.models import PaymentMethod, PaymentType
 
 
 class PaymentFactory(factory.Factory):
-    """Creates fake pets that you don't have to feed"""
+    """Factory for creating fake PaymentMethod instances for testing."""
 
     class Meta:  # pylint: disable=too-few-public-methods
         """Maps factory to data model"""
@@ -32,3 +31,6 @@ class PaymentFactory(factory.Factory):
 
     id = factory.Sequence(lambda n: n)
     name = factory.Faker("first_name")
+    payment_type = FuzzyChoice(choices=[PaymentType.CREDIT_CARD, PaymentType.PAYPAL, PaymentType.UNKNOWN])
+    payment_type_id = FuzzyInteger(1000, 9999)  # Assuming an arbitrary range for example
+    user_id = FuzzyInteger(1, 1000)  # Simulating user IDs in an arbitrary range
