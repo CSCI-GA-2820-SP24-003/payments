@@ -10,11 +10,15 @@ from service.models import (
     PaymentMethod,
     PaymentMethodType,
     CreditCard,
+    PayPal,
     DataValidationError,
-    FieldValidationError,
     db,
 )
-from tests.factories import CreditCardFactory
+from tests.factories import (
+    CreditCardFactory,
+    PayPalFactory,
+    generate_random_payment_methods,
+)
 
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/testdb"
@@ -50,6 +54,89 @@ class TestCaseBase(TestCase):
 
     def tearDown(self):
         """This runs after each test"""
+
+
+class TestPaymentMethodModel(TestCaseBase):
+    """PaymentMethod Model CRUD tests"""
+
+    def test_query_all_payment_methods(self):
+        """It should add and query different payment methods from the database via PaymentMethod API"""
+        payment_methods = generate_random_payment_methods()
+        for payment_method in payment_methods:
+            payment_method.create()
+
+        self.assertEqual(len(PaymentMethod.all()), len(payment_methods))
+
+    def test_delete_specific_payment_methods(self):
+        """Should delete PaymentMethod regardless of which type"""
+        credit_card = CreditCardFactory()
+        paypal = PayPalFactory()
+        credit_card.create()
+        paypal.create()
+        self.assertEqual(len(PaymentMethod.all()), 2)
+        PaymentMethod.delete(credit_card)
+        PaymentMethod.delete(paypal)
+        self.assertEqual(len(PaymentMethod.all()), 0)
+
+    def test_delete_non_existing_payment_method(self):
+        """It should raise an exception when deleting non existing method"""
+        credit_card = CreditCardFactory()
+        with self.assertRaises(DataValidationError):
+            PaymentMethod.delete(credit_card)
+
+    def test_find_payment_method_by_name(self):
+        """It should find PaymentMethod by name"""
+        paypal = PayPalFactory()
+        paypal.create()
+        found_paypal = PaymentMethod.find_by_name(paypal.name)
+        self.assertEqual(paypal, found_paypal[0])
+
+    def test_create_invalid_payment_method(self):
+        """It should not create a PaymentMethod with invalid data"""
+        payment_method = PaymentMethod(name='')
+        with self.assertRaises(DataValidationError):
+            payment_method.create()
+
+
+class TestPayPalModel(TestCaseBase):
+    """PayPal Model CRUD Tests"""
+    def test_deserialize_paypal(self):
+        """It should deserialize a correct PayPal object"""
+        fake_paypal = PayPalFactory()
+        data = fake_paypal.serialize()
+        paypal = PayPal()
+        paypal.deserialize(data)
+        self.assertTrue(paypal is not None)
+        self.assertEqual(paypal.id, None)
+        self.assertEqual(paypal.name, fake_paypal.name)
+        self.assertEqual(paypal.type, PaymentMethodType.PAYPAL)
+        self.assertEqual(paypal.email, fake_paypal.email)
+
+    def test_deserialize_credit_card_missing_data(self):
+        """It should not deserialize a PayPal with missing data"""
+        data = {"name": "abc"}
+        paypal = PayPal()
+        self.assertRaises(DataValidationError, paypal.deserialize, data)
+
+    def test_deserialize_credit_card_wrong_data(self):
+        """It should not deserialize a PayPal with missing data"""
+        data = PayPalFactory().serialize()
+        del data["email"]
+        data["email"] = 1
+        paypal = PayPal()
+        self.assertRaises(DataValidationError, paypal.deserialize, data)
+
+    def test_create_paypal_with_wrong_email(self):
+        """It should raise a FieldErrorException when creating PayPal with wrong email"""
+        paypal = PayPal()
+        rest_args = paypal.serialize()
+        del rest_args["email"]
+
+        with self.assertRaises(DataValidationError):
+            PayPal(
+                **rest_args,
+                email="aa.com",
+            )
 
 
 class TestCreditCardModel(TestCaseBase):
@@ -131,7 +218,7 @@ class TestCreditCardModel(TestCaseBase):
             "zip_code": 0,
         }
         credit_card = CreditCard()
-        self.assertRaises(FieldValidationError, credit_card.deserialize, data)
+        self.assertRaises(DataValidationError, credit_card.deserialize, data)
 
     def test_create_credit_card_with_invalid_card_number(self):
         """It should raise FieldValidationError when card_number is invalid"""
@@ -139,17 +226,17 @@ class TestCreditCardModel(TestCaseBase):
         rest_args = credit_card.serialize()
         del rest_args["card_number"]
 
-        with self.assertRaises(FieldValidationError):
+        with self.assertRaises(DataValidationError):
             CreditCard(
                 **rest_args,
                 card_number="1",
             )
-        with self.assertRaises(FieldValidationError):
+        with self.assertRaises(DataValidationError):
             CreditCard(
                 **rest_args,
                 card_number="abc",
             )
-        with self.assertRaises(FieldValidationError):
+        with self.assertRaises(DataValidationError):
             CreditCard(
                 **rest_args,
                 card_number=123,
@@ -161,9 +248,9 @@ class TestCreditCardModel(TestCaseBase):
         rest_args = credit_card.serialize()
         del rest_args["first_name"]
 
-        with self.assertRaises(FieldValidationError):
+        with self.assertRaises(DataValidationError):
             CreditCard(**rest_args, first_name=123)
-        with self.assertRaises(FieldValidationError):
+        with self.assertRaises(DataValidationError):
             CreditCard(**rest_args, first_name="123")
 
     def test_create_credit_card_with_invalid_last_name(self):
@@ -172,9 +259,9 @@ class TestCreditCardModel(TestCaseBase):
         rest_args = credit_card.serialize()
         del rest_args["last_name"]
 
-        with self.assertRaises(FieldValidationError):
+        with self.assertRaises(DataValidationError):
             CreditCard(**rest_args, last_name=123)
-        with self.assertRaises(FieldValidationError):
+        with self.assertRaises(DataValidationError):
             CreditCard(**rest_args, last_name="123")
 
     def test_create_credit_card_with_invalid_expiry_month(self):
@@ -183,11 +270,11 @@ class TestCreditCardModel(TestCaseBase):
         rest_args = credit_card.serialize()
         del rest_args["expiry_month"]
 
-        with self.assertRaises(FieldValidationError):
+        with self.assertRaises(DataValidationError):
             CreditCard(**rest_args, expiry_month=13)
-        with self.assertRaises(FieldValidationError):
+        with self.assertRaises(DataValidationError):
             CreditCard(**rest_args, expiry_month=-1)
-        with self.assertRaises(FieldValidationError):
+        with self.assertRaises(DataValidationError):
             CreditCard(**rest_args, expiry_month="abc")
 
     def test_create_credit_card_with_invalid_expiry_year(self):
@@ -196,11 +283,11 @@ class TestCreditCardModel(TestCaseBase):
         rest_args = credit_card.serialize()
         del rest_args["expiry_year"]
 
-        with self.assertRaises(FieldValidationError):
+        with self.assertRaises(DataValidationError):
             CreditCard(**rest_args, expiry_year=-10)
-        with self.assertRaises(FieldValidationError):
+        with self.assertRaises(DataValidationError):
             CreditCard(**rest_args, expiry_year=40010)
-        with self.assertRaises(FieldValidationError):
+        with self.assertRaises(DataValidationError):
             CreditCard(**rest_args, expiry_year="abc")
 
     def test_create_credit_card_with_invalid_security_code(self):
@@ -209,11 +296,11 @@ class TestCreditCardModel(TestCaseBase):
         rest_args = credit_card.serialize()
         del rest_args["security_code"]
 
-        with self.assertRaises(FieldValidationError):
+        with self.assertRaises(DataValidationError):
             CreditCard(**rest_args, security_code=1234)
-        with self.assertRaises(FieldValidationError):
+        with self.assertRaises(DataValidationError):
             CreditCard(**rest_args, security_code="code123!")
-        with self.assertRaises(FieldValidationError):
+        with self.assertRaises(DataValidationError):
             CreditCard(**rest_args, security_code="1000")
 
     def test_create_credit_card_with_invalid_zip_code(self):
@@ -222,11 +309,11 @@ class TestCreditCardModel(TestCaseBase):
         rest_args = credit_card.serialize()
         del rest_args["zip_code"]
 
-        with self.assertRaises(FieldValidationError):
+        with self.assertRaises(DataValidationError):
             CreditCard(**rest_args, zip_code=123456)
-        with self.assertRaises(FieldValidationError):
+        with self.assertRaises(DataValidationError):
             CreditCard(**rest_args, zip_code="abcdefg")
-        with self.assertRaises(FieldValidationError):
+        with self.assertRaises(DataValidationError):
             CreditCard(**rest_args, zip_code="1000")
 
     def test_add_a_credit_card_to_db(self):

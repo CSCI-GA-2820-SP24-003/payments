@@ -5,11 +5,12 @@ All of the models are stored in this module
 """
 
 from sqlalchemy.orm import validates
-from .payment_method import PaymentMethod, DataValidationError, PaymentMethodType, db
-
-
-class FieldValidationError(Exception):
-    """Used for field validation errors when creating a resource"""
+from .payment_method import (
+    PaymentMethod,
+    DataValidationError,
+    PaymentMethodType,
+    db,
+)
 
 
 EXPIRY_MONTH_CONSTRAINTS = [1, 12]
@@ -25,6 +26,7 @@ class CreditCard(PaymentMethod):
     # TABLE SCHEMA
     ##################################################
 
+    id = db.Column(db.Integer, db.ForeignKey('payment_method.id', ondelete='CASCADE'), primary_key=True)
     first_name = db.Column(db.String(32), nullable=False)
     last_name = db.Column(db.String(32), nullable=False)
     card_number = db.Column(db.String(16), nullable=False)
@@ -98,7 +100,7 @@ class CreditCard(PaymentMethod):
     def validate_first_name(self, _key, first_name):
         """Validates `first_name` field"""
         if is_not_str(first_name) or not first_name.isalpha():
-            raise FieldValidationError("First name field must contain letters only")
+            raise DataValidationError("First name field must contain letters only")
 
         return first_name
 
@@ -106,7 +108,7 @@ class CreditCard(PaymentMethod):
     def validate_last_name(self, _key, last_name):
         """Validates `last_name` field"""
         if is_not_str(last_name) or not last_name.isalpha():
-            raise FieldValidationError("Last name field must contain letters only")
+            raise DataValidationError("Last name field must contain letters only")
 
         return last_name
 
@@ -114,10 +116,10 @@ class CreditCard(PaymentMethod):
     def validate_card_number(self, _key, card_number):
         """Validates `card_number` field"""
         if is_not_str(card_number) or not card_number.isdigit():
-            raise FieldValidationError("Card number field must be numeric")
+            raise DataValidationError("Card number field must be numeric")
 
         if not len(card_number) == 16:
-            raise FieldValidationError("Card number field must be 16 digits")
+            raise DataValidationError("Card number field must be 16 digits")
 
         return card_number
 
@@ -125,10 +127,10 @@ class CreditCard(PaymentMethod):
     def validate_security_code(self, _key, security_code):
         """Validates `security_code` field"""
         if is_not_str(security_code) or not security_code.isdigit():
-            raise FieldValidationError("Security code field must be numeric")
+            raise DataValidationError("Security code field must be numeric")
 
         if not len(security_code) == 3:
-            raise FieldValidationError("Security code field must be 3 digits")
+            raise DataValidationError("Security code field must be 3 digits")
 
         return security_code
 
@@ -136,7 +138,7 @@ class CreditCard(PaymentMethod):
     def validate_expiry_year(self, _key, expiry_year):
         """Validates `expiry_year` field"""
         if is_not_int(expiry_year) or expiry_year < 2024 or expiry_year > 2050:
-            raise FieldValidationError("Expiry year field is invalid")
+            raise DataValidationError("Expiry year field is invalid")
 
         return expiry_year
 
@@ -144,7 +146,7 @@ class CreditCard(PaymentMethod):
     def validate_expiry_month(self, _key, expiry_month):
         """Validates `expiry_month` field"""
         if is_not_int(expiry_month) or expiry_month < 1 or expiry_month > 12:
-            raise FieldValidationError("Expiry month field is invalid")
+            raise DataValidationError("Expiry month field is invalid")
 
         return expiry_month
 
@@ -152,10 +154,10 @@ class CreditCard(PaymentMethod):
     def validate_zip_code(self, _key, zip_code):
         """Validates `zip_code` field"""
         if is_not_str(zip_code) or not zip_code.isdigit():
-            raise FieldValidationError("ZIP code field must be numeric")
+            raise DataValidationError("ZIP code field must be numeric")
 
         if not len(zip_code) == 5:
-            raise FieldValidationError("ZIP code field must be 5 digits")
+            raise DataValidationError("ZIP code field must be 5 digits")
 
         return zip_code
 

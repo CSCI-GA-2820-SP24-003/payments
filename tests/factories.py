@@ -2,9 +2,10 @@
 Factories for tests
 """
 
+import random
 from factory.fuzzy import FuzzyInteger
 from factory import Factory, Faker
-from service.models import PaymentMethod, CreditCard
+from service.models import PaymentMethod, CreditCard, PayPal
 
 
 class PaymentMethodFactory(Factory):
@@ -35,3 +36,25 @@ class CreditCardFactory(PaymentMethodFactory):
     security_code = Faker("credit_card_security_code", card_type="visa16")
     billing_address = Faker("address")
     zip_code = Faker("zipcode")
+
+
+class PayPalFactory(PaymentMethodFactory):
+    """Creates fake PayPal"""
+
+    class Meta:
+        """Persistent class"""
+
+        model = PayPal
+
+    email = Faker("email")
+
+
+def generate_random_payment_methods(count=10):
+    """Generates a list of random PaymentMethod instances"""
+    payment_methods = []
+    for _ in range(count):
+        random_choice = random.choice([CreditCardFactory, PayPalFactory])
+        method = random_choice()
+        payment_methods.append(method)
+
+    return payment_methods

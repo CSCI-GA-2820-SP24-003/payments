@@ -15,14 +15,15 @@ db = SQLAlchemy()
 
 
 class DataValidationError(Exception):
-    """Used for an data validation errors when deserializing"""
+    """Used for an data validation errors"""
 
 
 class PaymentMethodType(Enum):
     """Enumeration of valid payment types"""
 
-    CREDIT_CARD = 1
-    PAYPAL = 2
+    UNKNOWN = "UNKNOWN"
+    CREDIT_CARD = "CREDIT_CARD"
+    PAYPAL = "PAYPAL"
 
 
 class PaymentMethod(db.Model):
@@ -32,6 +33,7 @@ class PaymentMethod(db.Model):
     # TABLE SCHEMA
     ##################################################
 
+    __tablename__ = "payment_method"
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     name = db.Column(db.String(63), nullable=False)
     user_id = db.Column(db.Integer, nullable=False)
@@ -42,7 +44,8 @@ class PaymentMethod(db.Model):
     # We are utilizing the SQLAlchemy inheritance hierarchy with polymorphic identities
     # This allows us to query all payment methods from PaymentMethod class
     __mapper_args__ = {
-        "polymorphic_on": "type",
+        "polymorphic_identity": PaymentMethodType.UNKNOWN,
+        "polymorphic_on": type,
     }
 
     def __repr__(self):
