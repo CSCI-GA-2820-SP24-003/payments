@@ -18,7 +18,7 @@
 Payments Service
 
 This service implements a REST API that allows you to Create, Read, Update
-and Delete Pets from the inventory of pets in the PetShop
+and Delete Payments from the inventory of payments in the PaymentShop
 """
 
 from flask import jsonify, request, abort
@@ -93,3 +93,23 @@ def index():
 ######################################################################
 
 # Todo: Place your REST API code here ...
+
+
+######################################################################
+# DELETE A PAYMENT METHOD
+######################################################################
+@app.route("/payment-method/<int:id>", methods=["DELETE"])
+def delete_payment_method(id):
+    """
+    Delete a Payment Method
+
+    This endpoint will delete a Payment Method based the id specified in the path
+    """
+    app.logger.info("Request to delete payment with id: %d", id)
+
+    payment = PaymentMethod.find(id)
+    if payment:
+        payment.delete()
+
+    app.logger.info("Payment with ID: %d delete complete.", id)
+    return "", status.HTTP_204_NO_CONTENT
