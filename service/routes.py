@@ -24,6 +24,9 @@ and Delete Payments from the inventory of payments in the PaymentShop
 from flask import jsonify, request, abort
 from flask import current_app as app  # Import Flask application
 from service.models import PaymentMethod, PaymentMethodType, CreditCard, PayPal
+from resource import error
+
+from service.models import PaymentMethod
 from service.common import status  # HTTP Status Codes
 
 
@@ -166,3 +169,42 @@ def check_content_type(content_type):
     abort(
         status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, f"Content-Type must be {content_type}"
     )
+
+
+def list_payments():
+    """Returns all of the Payments"""
+    app.logger.info("Request for payment list")
+
+    payment = []
+
+    # See if any query filters were passed in
+    category = request.args.get("category")
+    name = request.args.get("name")
+    if category:
+        payment = PaymentMethod.find_by_category(category)
+    elif name:
+        payment = PaymentMethod.find_by_name(name)
+    else:
+        payment = PaymentMethod.all()
+
+    results = [payment.serialize() for i in payment]
+    app.logger.info("Returning %d payments", len(results))
+    return jsonify(results), status.HTTP_200_OK
+
+
+@app.route("/payment-method/<int:id>", methods=["GET"])
+def get_pets(pet_id):
+    """
+    Retrieve a single Pyament
+
+    This endpoint will return a Payment based on it's id
+    """
+    app.logger.info("Request for payment with id: %s", id)
+
+    payment = PaymentMethod.find(id)
+    # pet = Payment.find(pet_id)
+    if not payment:
+        error(status.HTTP_404_NOT_FOUND, f"Pet with id '{pet_id}' was not found.")
+
+    app.logger.info("Returning pet: %s", payment.name)
+    return jsonify(payment.serialize()), status.HTTP_200_OK
