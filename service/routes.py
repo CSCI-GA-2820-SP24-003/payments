@@ -15,9 +15,6 @@
 ######################################################################
 
 """
-
-
-
 Payments Service
 
 This service implements a REST API that allows you to Create, Read, Update
@@ -95,22 +92,22 @@ def index():
 #  R E S T   A P I   E N D P O I N T S
 ######################################################################
 ######################################################################
-# UPDATE AN EXISTING PET
+# UPDATE AN EXISTING PAYMENT METHOD
 ######################################################################
 @app.route("/payments/<int:id>", methods=["PUT"])
-def update_payments(id):
+def update_payments(payment_method_id):
     """
     Update a PaymentMethod
 
     This endpoint will update a PaymentMethod based the body that is posted
     """
-    app.logger.info("Request to update payment with id: %d", id)
+    app.logger.info("Request to update payment with id: %d", payment_method_id)
     check_content_type("application/json")
 
-    payment = PaymentMethod.find(id)
+    payment = PaymentMethod.find(payment_method_id)
     if not payment:
         error(
-            status.HTTP_404_NOT_FOUND, f"PaymentMethod with id: '{id}' was not found."
+            status.HTTP_404_NOT_FOUND, f"PaymentMethod with id: '{payment_method_id}' was not found."
         )
 
     payment.deserialize(request.get_json())
@@ -121,7 +118,7 @@ def update_payments(id):
     app.logger.info("PaymentMethod with ID: %d updated.", payment.id)
     return jsonify(payment.serialize()), status.HTTP_200_OK
 
-# Todo: Place your REST API code here ...
+
 
 
 ######################################################################
