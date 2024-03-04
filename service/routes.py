@@ -18,12 +18,12 @@
 Payments Service
 
 This service implements a REST API that allows you to Create, Read, Update
-and Delete Pets from the inventory of pets in the PetShop
+and Delete Payments from the inventory of payments in the PaymentShop
 """
 
 from flask import jsonify, request, abort
 from flask import current_app as app  # Import Flask application
-from service.models import PaymentMethodType, CreditCard, PayPal
+from service.models import PaymentMethod, PaymentMethodType, CreditCard, PayPal
 from service.common import status  # HTTP Status Codes
 
 
@@ -91,6 +91,11 @@ def index():
 ######################################################################
 #  R E S T   A P I   E N D P O I N T S
 ######################################################################
+
+
+######################################################################
+#  CREATE A PAYMENT METHOD
+######################################################################
 @app.route("/payment-method", methods=["POST"])
 def create_payment_method():
     """
@@ -118,6 +123,26 @@ def create_payment_method():
     message = payment_method.serialize()
 
     return jsonify(message), status.HTTP_201_CREATED
+
+
+######################################################################
+# DELETE A PAYMENT METHOD
+######################################################################
+@app.route("/payment-method/<int:id>", methods=["DELETE"])
+def delete_payment_method(payment_method_id):
+    """
+    Delete a Payment Method
+
+    This endpoint will delete a Payment Method based the id specified in the path
+    """
+    app.logger.info("Request to delete payment with id: %d", payment_method_id)
+
+    payment = PaymentMethod.find(payment_method_id)
+    if payment:
+        payment.delete()
+
+    app.logger.info("Payment with ID: %d delete complete.", payment_method_id)
+    return "", status.HTTP_204_NO_CONTENT
 
 
 ######################################################################

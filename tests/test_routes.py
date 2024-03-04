@@ -14,6 +14,8 @@ DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/postgres"
 )
 
+BASE_URL = "/payment-method"
+
 
 ######################################################################
 #  T E S T   C A S E S
@@ -88,7 +90,7 @@ class TestPaymentsService(TestCase):
         """It should create a new CreditCard"""
         credit_card = CreditCardFactory()
         resp = self.client.post(
-            "/payment-method",
+            BASE_URL,
             json=credit_card.serialize(),
             content_type="application/json",
         )
@@ -113,7 +115,7 @@ class TestPaymentsService(TestCase):
         """It should create a new PayPal"""
         paypal = PayPalFactory()
         resp = self.client.post(
-            "/payment-method",
+            BASE_URL,
             json=paypal.serialize(),
             content_type="application/json",
         )
@@ -135,22 +137,30 @@ class TestPaymentsService(TestCase):
             "type": "test",
             "email": "sample@email.com",
         }
-        resp = self.client.post(
-            "/payment-method", json=data, content_type="application/json"
-        )
+        resp = self.client.post(BASE_URL, json=data, content_type="application/json")
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_payment_method_wrong_content_type(self):
         """It should respond with 415 when creating a payment method with anything but application/json"""
-        resp = self.client.post("/payment-method", content_type="text/html")
+        resp = self.client.post(BASE_URL, content_type="text/html")
         self.assertEqual(resp.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
     def test_create_payment_method_no_content_type(self):
         """It should respond with 415 when creating a payment method with no content type"""
-        resp = self.client.post("/payment-method", content_type=None)
+        resp = self.client.post(BASE_URL, content_type=None)
         self.assertEqual(resp.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
     def test_unsupported_method(self):
         """It should respond with 405 when trying to use unsupported method"""
-        resp = self.client.trace("/payment-method")
+        resp = self.client.trace(BASE_URL)
         self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_delete_payment_method(self):
+        """It should Delete a Payment Method"""
+        test_payment = self._create_payments(1)[0]
+        response = self.client.delete(f"{BASE_URL}/{test_payment.id}")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(len(response.data), 0)
+        # make sure they are deleted
+        response = self.client.get(f"{BASE_URL}/{test_payment.id}")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
