@@ -15,15 +15,15 @@
 ######################################################################
 
 """
-Pet Store Service
+PaymentMethod Store Service
 
 This service implements a REST API that allows you to Create, Read, Update
-and Delete Pets from the inventory of pets in the PetShop
+and Delete PaymentMethods from the inventory of payments in the PaymentMethodShop
 """
 
-from flask import jsonify, request, url_for, abort
+from flask import jsonify, request, abort
 from flask import current_app as app  # Import Flask application
-from service.models import YourResourceModel
+from service.models import PaymentMethod
 from service.common import status  # HTTP Status Codes
 
 
@@ -32,7 +32,7 @@ from service.common import status  # HTTP Status Codes
 ######################################################################
 @app.route("/")
 def index():
-    """ Root URL response """
+    """Root URL response"""
     return (
         "Reminder: return some useful information in json format about the service here",
         status.HTTP_200_OK,
@@ -42,5 +42,28 @@ def index():
 ######################################################################
 #  R E S T   A P I   E N D P O I N T S
 ######################################################################
+######################################################################
+# UPDATE AN EXISTING PET
+######################################################################
+@app.route("/payments/<int:id>", methods=["PUT"])
+def update_payments(id):
+    """
+    Update a PaymentMethod
 
-# Todo: Place your REST API code here ...
+    This endpoint will update a PaymentMethod based the body that is posted
+    """
+    app.logger.info("Request to update payment with id: %d", id)
+    check_content_type("application/json")
+
+    payment = PaymentMethod.find(id)
+    if not payment:
+        error(
+            status.HTTP_404_NOT_FOUND, f"PaymentMethod with id: '{id}' was not found."
+        )
+
+    payment.deserialize(request.get_json())
+    payment.id = id
+    payment.update()
+
+    app.logger.info("PaymentMethod with ID: %d updated.", payment.id)
+    return jsonify(payment.serialize()), status.HTTP_200_OK
