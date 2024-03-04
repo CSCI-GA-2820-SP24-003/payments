@@ -15,10 +15,14 @@
 ######################################################################
 
 """
-PaymentMethod Store Service
+
+
+
+Payments Service
 
 This service implements a REST API that allows you to Create, Read, Update
-and Delete PaymentMethods from the inventory of payments in the PaymentMethodShop
+and Delete Payments from the inventory of payments in the PaymentShop
+
 """
 
 from flask import jsonify, request, abort
@@ -32,9 +36,58 @@ from service.common import status  # HTTP Status Codes
 ######################################################################
 @app.route("/")
 def index():
-    """ Root URL response """
+    """Root URL response"""
+    app.logger.info("Request for root URL")
     return (
-        "Reminder: return some useful information in json format about the service here",
+        jsonify(
+            name="Payments service",
+            version="1.0",
+            status=status.HTTP_200_OK,
+            methods=list(
+                [
+                    {
+                        "path": "/payment-methods",
+                        "method": "GET",
+                        "operation": "Read",
+                        "description": "List all payment methods for a user",
+                        "request_body": "None",
+                        "response_body": "Payment method records",
+                    },
+                    {
+                        "path": "/payment-method/:id",
+                        "method": "GET",
+                        "operation": "Read",
+                        "description": "Provide detailed information about an existing payment method",
+                        "request_body": "None",
+                        "response_body": "Payment method record",
+                    },
+                    {
+                        "path": "/payment-method",
+                        "method": "POST",
+                        "operation": "Create",
+                        "description": "Create a payment method",
+                        "request_body": "Payment method record",
+                        "response_body": "None",
+                    },
+                    {
+                        "path": "/payment-method/:id",
+                        "method": "PUT",
+                        "operation": "Update",
+                        "description": "Update a given payment method",
+                        "request_body": "Payment method record",
+                        "response_body": "None",
+                    },
+                    {
+                        "path": "/payment-method/:id",
+                        "method": "DELETE",
+                        "operation": "Delete",
+                        "description": "Delete a given payment method",
+                        "request_body": "None",
+                        "response_body": "None",
+                    },
+                ]
+            ),
+        ),
         status.HTTP_200_OK,
     )
 
@@ -64,5 +117,29 @@ def update_payments(id):
     payment.id = id
     payment.update()
 
+
     app.logger.info("PaymentMethod with ID: %d updated.", payment.id)
     return jsonify(payment.serialize()), status.HTTP_200_OK
+
+# Todo: Place your REST API code here ...
+
+
+######################################################################
+# DELETE A PAYMENT METHOD
+######################################################################
+@app.route("/payment-method/<int:id>", methods=["DELETE"])
+def delete_payment_method(id):
+    """
+    Delete a Payment Method
+
+    This endpoint will delete a Payment Method based the id specified in the path
+    """
+    app.logger.info("Request to delete payment with id: %d", id)
+
+    payment = PaymentMethod.find(id)
+    if payment:
+        payment.delete()
+
+    app.logger.info("Payment with ID: %d delete complete.", id)
+    return "", status.HTTP_204_NO_CONTENT
+

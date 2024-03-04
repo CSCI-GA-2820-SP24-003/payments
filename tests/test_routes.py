@@ -8,11 +8,15 @@ from unittest import TestCase
 from wsgi import app
 from service.common import status
 from service.models import db, PaymentMethod
+
 from .factories import PaymentMethodFactory
+
 
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/postgres"
 )
+BASE_URL = "/payment-method"
+
 BASE_URL = "/payment-method"
 
 
@@ -20,7 +24,10 @@ BASE_URL = "/payment-method"
 #  T E S T   C A S E S
 ######################################################################
 # pylint: disable=too-many-public-methods
+
 class TestPaymentService(TestCase):
+
+
     """REST API Server Tests"""
 
     @classmethod
@@ -85,6 +92,7 @@ class TestPaymentService(TestCase):
             is_path_and_method_in_list(path="/payment-method/:id", method="PUT")
         )
 
+
     # Todo: Add your test cases here...
     def test_update_payment(self):
         """It should Update an existing Pet"""
@@ -101,3 +109,14 @@ class TestPaymentService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         updated_payment = response.get_json()
         self.assertEqual(updated_payment["category"], "unknown")
+
+    def test_delete_payment(self):
+        """It should Delete a Payment Method"""
+        test_payment = self._create_payments(1)[0]
+        response = self.client.delete(f"{BASE_URL}/{test_payment.id}")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(len(response.data), 0)
+        # make sure they are deleted
+        response = self.client.get(f"{BASE_URL}/{test_payment.id}")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+

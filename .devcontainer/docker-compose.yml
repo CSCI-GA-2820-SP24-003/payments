@@ -17,7 +17,7 @@ services:
       FLASK_APP: wsgi:app
       FLASK_DEBUG: "True"
       GUNICORN_BIND: "0.0.0.0:8000"
-      DATABASE_URI: postgresql+psycopg://postgres:pgs3cr3t@postgres:5432/postgres
+      DATABASE_URI: postgresql+psycopg://postgres:postgres@postgres:5432/postgres
     networks:
       - dev
     depends_on:
@@ -26,10 +26,10 @@ services:
   postgres:
     image: postgres:15-alpine
     # Uncomment ports to access database from your computer (optional)
-    # ports:
-    #   - 5432:5432
+    ports:
+       - 5432:5432
     environment:
-      POSTGRES_PASSWORD: pgs3cr3t
+      POSTGRES_PASSWORD: postgres
     volumes:
       - postgres:/var/lib/postgresql/data
     networks:
