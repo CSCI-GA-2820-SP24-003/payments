@@ -23,7 +23,7 @@ and Delete Pets from the inventory of pets in the PetShop
 
 from flask import jsonify, request, abort
 from flask import current_app as app  # Import Flask application
-from service.models import PaymentMethod, PaymentMethodType, CreditCard, PayPal
+from service.models import PaymentMethodType, CreditCard, PayPal
 from service.common import status  # HTTP Status Codes
 
 

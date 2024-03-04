@@ -158,7 +158,7 @@ class TestCreditCardModel(TestCaseBase):
         self.assertTrue(credit_card is not None)
         self.assertEqual(credit_card.id, None)
         self.assertEqual(credit_card.name, fake_credit_card.name)
-        self.assertEqual(credit_card.type, PaymentMethodType.CREDIT_CARD)
+        self.assertEqual(credit_card.type, fake_credit_card.type.value)
         self.assertEqual(credit_card.first_name, fake_credit_card.first_name)
         self.assertEqual(credit_card.last_name, fake_credit_card.last_name)
         self.assertEqual(credit_card.card_number, fake_credit_card.card_number)

@@ -6,6 +6,7 @@ import os
 import logging
 from unittest import TestCase
 from wsgi import app
+from tests.factories import CreditCardFactory, PayPalFactory
 from service.common import status
 from service.models import db, PaymentMethod
 
@@ -82,3 +83,74 @@ class TestPaymentsService(TestCase):
         self.assertTrue(
             is_path_and_method_in_list(path="/payment-method/:id", method="PUT")
         )
+
+    def test_create_credit_card_payment_method(self):
+        """It should create a new CreditCard"""
+        credit_card = CreditCardFactory()
+        resp = self.client.post(
+            "/payment-method",
+            json=credit_card.serialize(),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        # Check whether response matches the credit card method
+        created_card = resp.get_json()
+        self.assertIsNotNone(created_card["id"])
+        self.assertEqual(created_card["name"], credit_card.name)
+        self.assertEqual(created_card["type"], credit_card.type.value)
+        self.assertEqual(created_card["user_id"], credit_card.user_id)
+        self.assertEqual(created_card["first_name"], credit_card.first_name)
+        self.assertEqual(created_card["last_name"], credit_card.last_name)
+        self.assertEqual(created_card["card_number"], credit_card.card_number)
+        self.assertEqual(created_card["expiry_year"], credit_card.expiry_year)
+        self.assertEqual(created_card["expiry_month"], credit_card.expiry_month)
+        self.assertEqual(created_card["security_code"], credit_card.security_code)
+        self.assertEqual(created_card["zip_code"], credit_card.zip_code)
+        self.assertEqual(created_card["billing_address"], credit_card.billing_address)
+
+    def test_create_paypal_payment_method(self):
+        """It should create a new PayPal"""
+        paypal = PayPalFactory()
+        resp = self.client.post(
+            "/payment-method",
+            json=paypal.serialize(),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        # Check whether response matches the paypal method
+        created_paypal = resp.get_json()
+        self.assertIsNotNone(created_paypal["id"])
+        self.assertEqual(created_paypal["name"], paypal.name)
+        self.assertEqual(created_paypal["type"], paypal.type.value)
+        self.assertEqual(created_paypal["user_id"], paypal.user_id)
+        self.assertEqual(created_paypal["email"], paypal.email)
+
+    def test_create_payment_method_with_no_type(self):
+        """It should respond with 400 BAD REQUEST if type is wrong"""
+        data = {
+            "name": "test_method",
+            "user_id": 3,
+            "type": "test",
+            "email": "sample@email.com",
+        }
+        resp = self.client.post(
+            "/payment-method", json=data, content_type="application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_payment_method_wrong_content_type(self):
+        """It should respond with 415 when creating a payment method with anything but application/json"""
+        resp = self.client.post("/payment-method", content_type="text/html")
+        self.assertEqual(resp.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+
+    def test_create_payment_method_no_content_type(self):
+        """It should respond with 415 when creating a payment method with no content type"""
+        resp = self.client.post("/payment-method", content_type=None)
+        self.assertEqual(resp.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+
+    def test_unsupported_method(self):
+        """It should respond with 405 when trying to use unsupported method"""
+        resp = self.client.trace("/payment-method")
+        self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
