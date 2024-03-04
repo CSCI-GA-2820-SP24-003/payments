@@ -128,7 +128,7 @@ def create_payment_method():
 ######################################################################
 # DELETE A PAYMENT METHOD
 ######################################################################
-@app.route("/payment-method/<int:id>", methods=["DELETE"])
+@app.route("/payment-method/<int:payment_method_id>", methods=["DELETE"])
 def delete_payment_method(payment_method_id):
     """
     Delete a Payment Method
