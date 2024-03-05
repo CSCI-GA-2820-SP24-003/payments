@@ -5,6 +5,8 @@ TestYourResourceModel API Service Test Suite
 import os
 import logging
 from unittest import TestCase
+
+from tests.factories import PaymentMethodFactory, PayPalFactory
 from wsgi import app
 from service.common import status
 from service.models import db, PaymentMethod
@@ -85,6 +87,25 @@ class TestPaymentsService(TestCase):
             is_path_and_method_in_list(path="/payment-method/:id", method="PUT")
         )
 
+
+    def _create_payments(self, count):
+        """Factory method to create payments in bulk"""
+        payments = []
+        for _ in range(count):
+            test_payment = PayPalFactory()
+            # response = self.client.post(BASE_URL, json=test_payment.serialize())
+            # self.assertEqual(
+            #     response.status_code,
+            #     status.HTTP_201_CREATED,
+            #     "Could not create test payment",
+            # )
+            # new_payment = response.get_json()
+            # test_payment.id = new_payment[1]
+            test_payment.create()
+            payments.append(test_payment)
+
+        return payments
+
     def test_delete_payment(self):
         """It should Delete a Payment Method"""
         test_payment = self._create_payments(1)[0]
@@ -94,3 +115,30 @@ class TestPaymentsService(TestCase):
         # make sure they are deleted
         response = self.client.get(f"{BASE_URL}/{test_payment.id}")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_list_payment(self):
+        """It should List all Payment Method"""
+        self._create_payments(5)
+        response = self.client.get(BASE_URL)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), 5)
+
+    def test_get_payment(self):
+        """It should Get a single Payment"""
+        test_payment = self._create_payments(1)[0]
+        response = self.client.get(f"{BASE_URL}/{test_payment.id}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(data["name"], test_payment.name)
+
+
+
+
+
+
+
+
+
+
+
