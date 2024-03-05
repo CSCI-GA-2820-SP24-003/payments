@@ -24,9 +24,6 @@ and Delete Payments from the inventory of payments in the PaymentShop
 from flask import jsonify, request, abort
 from flask import current_app as app  # Import Flask application
 from service.models import PaymentMethod, PaymentMethodType, CreditCard, PayPal
-from resource import error
-
-from service.models import PaymentMethod
 from service.common import status  # HTTP Status Codes
 
 
@@ -136,13 +133,13 @@ def delete_payment_method(payment_method_id):
     """
     Delete a Payment Method
 
-    This endpoint will delete a Payment Method based the id specified in the path
+    This endpoint will delete a PaymentMethod based the id specified in the path
     """
     app.logger.info("Request to delete payment with id: %d", payment_method_id)
 
-    payment = PaymentMethod.find(payment_method_id)
-    if payment:
-        payment.delete()
+    payment_method = PaymentMethod.find(payment_method_id)
+    if payment_method:
+        payment_method.delete()
 
     app.logger.info("Payment with ID: %d delete complete.", payment_method_id)
     return "", status.HTTP_204_NO_CONTENT
@@ -171,40 +168,40 @@ def check_content_type(content_type):
     )
 
 
-@app.route("/payment-method", methods=["GET"])
+@app.route("/payment-methods", methods=["GET"])
 def list_payments_method():
-    """Returns all of the Payments"""
-    app.logger.info("Request for payment list")
+    """Returns all of the PaymentMethods"""
+    app.logger.info("Request for payment method list")
 
-    payment = []
+    payment_methods = []
 
     # See if any query filters were passed in
-    category = request.args.get("category")
     name = request.args.get("name")
-    if category:
-        payment = PaymentMethod.find_by_category(category)
-    elif name:
-        payment = PaymentMethod.find_by_name(name)
+    if name:
+        payment_methods = PaymentMethod.find_by_name(name)
     else:
-        payment = PaymentMethod.all()
+        payment_methods = PaymentMethod.all()
 
-    results = [i.serialize() for i in payment]
-    app.logger.info("Returning %d payments", len(results))
+    results = [payment_method.serialize() for payment_method in payment_methods]
+    app.logger.info("Returning %d payment methods", len(results))
     return jsonify(results), status.HTTP_200_OK
 
 
-@app.route("/payment-method/<int:id>", methods=["GET"])
-def get_payment_method(id):
+@app.route("/payment-method/<int:payment_method_id>", methods=["GET"])
+def get_payment_method(payment_method_id):
     """
-    Retrieve a single Payment
+    Retrieve a single PaymentMethod
 
-    This endpoint will return a Payment based on it's id
+    This endpoint will return a PaymentMethod based on its ID
     """
-    app.logger.info("Request for payment with id: %s", id)
+    app.logger.info("Request for payment with id: %s", payment_method_id)
 
-    payment = PaymentMethod.find(id)
-    if not payment:
-        error(status.HTTP_404_NOT_FOUND, f"Payment with id '{id}' was not found.")
+    payment_method = PaymentMethod.find(payment_method_id)
+    if not payment_method:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"PaymentMethod with id '{payment_method_id}' was not found.",
+        )
 
-    app.logger.info("Returning payment: %s", payment.name)
-    return jsonify(payment.serialize()), status.HTTP_200_OK
+    app.logger.info("Returning PaymentMethod: %s", payment_method.name)
+    return jsonify(payment_method.serialize()), status.HTTP_200_OK
