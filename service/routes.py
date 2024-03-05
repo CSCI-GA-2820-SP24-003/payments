@@ -171,6 +171,7 @@ def check_content_type(content_type):
     )
 
 
+@app.route("/payment-method", methods=["GET"])
 def list_payments_method():
     """Returns all of the Payments"""
     app.logger.info("Request for payment list")
