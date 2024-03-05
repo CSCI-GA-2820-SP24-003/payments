@@ -171,7 +171,7 @@ def check_content_type(content_type):
     )
 
 
-def list_payments():
+def list_payments_method():
     """Returns all of the Payments"""
     app.logger.info("Request for payment list")
 
@@ -193,18 +193,17 @@ def list_payments():
 
 
 @app.route("/payment-method/<int:id>", methods=["GET"])
-def get_pets(pet_id):
+def get_payment_method(id):
     """
-    Retrieve a single Pyament
+    Retrieve a single Payment
 
     This endpoint will return a Payment based on it's id
     """
     app.logger.info("Request for payment with id: %s", id)
 
     payment = PaymentMethod.find(id)
-    # pet = Payment.find(pet_id)
     if not payment:
-        error(status.HTTP_404_NOT_FOUND, f"Pet with id '{pet_id}' was not found.")
+        error(status.HTTP_404_NOT_FOUND, f"Payment with id '{id}' was not found.")
 
-    app.logger.info("Returning pet: %s", payment.name)
+    app.logger.info("Returning payment: %s", payment.name)
     return jsonify(payment.serialize()), status.HTTP_200_OK
