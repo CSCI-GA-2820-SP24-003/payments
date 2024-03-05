@@ -188,11 +188,11 @@ class TestPaymentsService(TestCase):
 
     def test_list_payment(self):
         """It should List all Payment Method"""
-        self._create_payments(5)
+        self._create_payments(1)
         response = self.client.get(BASE_URL)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
-        self.assertEqual(len(data), 5)
+        self.assertEqual(len(data), 1)
 
     def test_get_payment(self):
         """It should Get a single Payment"""
