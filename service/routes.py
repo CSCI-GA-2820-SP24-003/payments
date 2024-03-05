@@ -132,7 +132,7 @@ def list_payments_method():
     else:
         payment = PaymentMethod.all()
 
-    results = [payment.serialize() for i in payment]
+    results = [i.serialize() for i in payment]
     app.logger.info("Returning %d payments", len(results))
     return jsonify(results), status.HTTP_200_OK
 
