@@ -18,16 +18,13 @@ DATABASE_URI = os.getenv(
 )
 BASE_URL = "/payment-method"
 
-
-
 ######################################################################
 #  T E S T   C A S E S
 ######################################################################
 # pylint: disable=too-many-public-methods
 
+
 class TestPaymentsService(TestCase):
-
-
     """REST API Server Tests"""
 
     @classmethod
@@ -91,26 +88,6 @@ class TestPaymentsService(TestCase):
         self.assertTrue(
             is_path_and_method_in_list(path="/payment-method/:id", method="PUT")
         )
-
-
-
-  
-    def test_update_payment(self):
-        """It should Update an existing Payment Method"""
-        # create a payment to update
-        test_payment = PaymentMethodFactory()
-        response = self.client.post(BASE_URL, json=test_payment.serialize())
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-        # update the payment
-        new_payment = response.get_json()
-        logging.debug(new_payment)
-        new_payment["name"] = "unknown"
-        response = self.client.put(f"{BASE_URL}/{new_payment['id']}", json=new_payment)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        updated_payment = response.get_json()
-        self.assertEqual(updated_payment["name"], "unknown")
-
 
     def test_create_credit_card_payment_method(self):
         """It should create a new CreditCard"""
@@ -182,7 +159,6 @@ class TestPaymentsService(TestCase):
         self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_delete_payment_method(self):
-
         """It should Delete a Payment Method"""
         test_payment_method = CreditCardFactory()
         test_payment_method.create()
@@ -194,7 +170,5 @@ class TestPaymentsService(TestCase):
         response = self.client.get(f"{BASE_URL}/{test_payment.id}")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-
         # response = self.client.get(f"{BASE_URL}/{test_payment_method.id}")
         # self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-

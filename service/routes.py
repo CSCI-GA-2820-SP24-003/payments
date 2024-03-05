@@ -88,6 +88,7 @@ def index():
         status.HTTP_200_OK,
     )
 
+
 ######################################################################
 #  R E S T   A P I   E N D P O I N T S
 ######################################################################
@@ -95,7 +96,7 @@ def index():
 # UPDATE AN EXISTING PAYMENT METHOD
 ######################################################################
 @app.route("/payments/<int:payment_method_id>", methods=["PUT"])
-def update_payments(payment_method_id):
+def update_payment_method(payment_method_id):
     """
     Update a PaymentMethod
 
@@ -107,19 +108,16 @@ def update_payments(payment_method_id):
     payment = PaymentMethod.find(payment_method_id)
     if not payment:
         error(
-            status.HTTP_404_NOT_FOUND, f"PaymentMethod with id: '{payment_method_id}' was not found."
+            status.HTTP_404_NOT_FOUND,
+            f"PaymentMethod with id: '{payment_method_id}' was not found.",
         )
 
     payment.deserialize(request.get_json())
     payment.id = payment_method_id
     payment.update()
 
-
     app.logger.info("PaymentMethod with ID: %d updated.", payment.id)
     return jsonify(payment.serialize()), status.HTTP_200_OK
-
-
-
 
 
 ######################################################################
@@ -152,7 +150,6 @@ def create_payment_method():
     message = payment_method.serialize()
 
     return jsonify(message), status.HTTP_201_CREATED
-
 
 
 ######################################################################
@@ -196,4 +193,3 @@ def check_content_type(content_type):
     abort(
         status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, f"Content-Type must be {content_type}"
     )
-
