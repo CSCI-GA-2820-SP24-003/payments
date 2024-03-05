@@ -38,8 +38,9 @@ This project template contains starter code for your class project. The `/servic
 
 ```text
 /index              - Root URL
-/payment-method    
+/payment-methods   
                     - GET : List all payment methods for a user
+/payment-method   
                     - POST: Create a payment method
 /payment-method/:id
                     - GET: Provide detailed information about an existing payment method
