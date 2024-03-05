@@ -23,7 +23,7 @@ and Delete Payments from the inventory of payments in the PaymentShop
 
 from flask import jsonify, request, abort
 from flask import current_app as app  # Import Flask application
-from service.models import PaymentMethod
+from service.models import PaymentMethod, PaymentMethodType, CreditCard, PayPal
 from service.common import status  # HTTP Status Codes
 
 
@@ -92,24 +92,77 @@ def index():
 #  R E S T   A P I   E N D P O I N T S
 ######################################################################
 
-# Todo: Place your REST API code here ...
+
+######################################################################
+#  CREATE A PAYMENT METHOD
+######################################################################
+@app.route("/payment-method", methods=["POST"])
+def create_payment_method():
+    """
+    Creates Payment Method
+    This endpoint will create a PaymentMethod based on the data in the body that is posted
+    """
+    app.logger.info("Request to create a PaymentMethod")
+    check_content_type("application/json")
+    body = request.get_json()
+    payment_method = None
+    method_type = body.get("type")
+
+    if method_type == PaymentMethodType.CREDIT_CARD.value:
+        payment_method = CreditCard()
+
+    if method_type == PaymentMethodType.PAYPAL.value:
+        payment_method = PayPal()
+
+    # Abort if no type was provided
+    if payment_method is None:
+        abort(status.HTTP_400_BAD_REQUEST, "PaymentMethod must have a type")
+
+    payment_method.deserialize(body)
+    payment_method.create()
+    message = payment_method.serialize()
+
+    return jsonify(message), status.HTTP_201_CREATED
 
 
 ######################################################################
 # DELETE A PAYMENT METHOD
 ######################################################################
-@app.route("/payment-method/<int:id>", methods=["DELETE"])
-def delete_payment_method(id):
+@app.route("/payment-method/<int:payment_method_id>", methods=["DELETE"])
+def delete_payment_method(payment_method_id):
     """
     Delete a Payment Method
 
     This endpoint will delete a Payment Method based the id specified in the path
     """
-    app.logger.info("Request to delete payment with id: %d", id)
+    app.logger.info("Request to delete payment with id: %d", payment_method_id)
 
-    payment = PaymentMethod.find(id)
+    payment = PaymentMethod.find(payment_method_id)
     if payment:
         payment.delete()
 
-    app.logger.info("Payment with ID: %d delete complete.", id)
+    app.logger.info("Payment with ID: %d delete complete.", payment_method_id)
     return "", status.HTTP_204_NO_CONTENT
+
+
+######################################################################
+#  U T I L I T Y   F U N C T I O N S
+######################################################################
+
+
+def check_content_type(content_type):
+    """Checks that the media type is correct"""
+    if "Content-Type" not in request.headers:
+        app.logger.error("No Content-Type specified.")
+        abort(
+            status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            f"Content-Type must be {content_type}",
+        )
+
+    if request.headers["Content-Type"] == content_type:
+        return
+
+    app.logger.error("Invalid Content-Type: %s", request.headers["Content-Type"])
+    abort(
+        status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, f"Content-Type must be {content_type}"
+    )

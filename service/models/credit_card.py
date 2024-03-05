@@ -9,6 +9,7 @@ from .payment_method import (
     PaymentMethod,
     DataValidationError,
     PaymentMethodType,
+    convert_str_to_payment_method_type_enum,
     db,
 )
 
@@ -53,7 +54,7 @@ class CreditCard(PaymentMethod):
         return {
             "id": self.id,
             "name": self.name,
-            "type": self.type,
+            "type": self.type.value,
             "user_id": self.user_id,
             "first_name": self.first_name,
             "last_name": self.last_name,
@@ -73,9 +74,9 @@ class CreditCard(PaymentMethod):
             data (dict): A dictionary containing the resource data
         """
         try:
-            self.id = data["id"]
             self.name = data["name"]
-            self.type = data["type"]
+            self.type = convert_str_to_payment_method_type_enum(data["type"])
+            self.user_id = data["user_id"]
             self.first_name = data["first_name"]
             self.last_name = data["last_name"]
             self.card_number = data["card_number"]

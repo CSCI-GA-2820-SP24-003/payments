@@ -8,6 +8,7 @@ from .payment_method import (
     PaymentMethod,
     DataValidationError,
     PaymentMethodType,
+    convert_str_to_payment_method_type_enum,
     db,
 )
 
@@ -35,7 +36,7 @@ class PayPal(PaymentMethod):
         return {
             "id": self.id,
             "name": self.name,
-            "type": self.type,
+            "type": self.type.value,
             "user_id": self.user_id,
             "email": self.email,
         }
@@ -48,9 +49,9 @@ class PayPal(PaymentMethod):
             data (dict): A dictionary containing the resource data
         """
         try:
-            self.id = data["id"]
             self.name = data["name"]
-            self.type = data["type"]
+            self.type = convert_str_to_payment_method_type_enum(data["type"])
+            self.user_id = data["user_id"]
             self.email = data["email"]
         except AttributeError as error:
             raise DataValidationError("Invalid attribute: " + error.args[0]) from error
