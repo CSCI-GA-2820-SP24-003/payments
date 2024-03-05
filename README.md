@@ -23,22 +23,29 @@ This project template contains starter code for your class project. The `/servic
 1. Git clone this repo to your machine
 2. Start VS Code, run the `Dev Containers: Open Folder in Container...` command from the Command Palette (`F1`)
 3. Try `pytest` in the terminal to run tests make sure the environment has been installed correctly.
-
-<summary>Using Visual Studio Code</summary>
-  
-  ### Requirements
-  1. Pycharm
-  2. Docker 
-  3. Install the Docker Plugin on pycharm
-
-  ### Install instructions
-1. Git clone this repo to your machine
-2. Start VS Code, run the `Dev Containers: Open Folder in Container...` command from the Command Palette (`F1`)
-3. Try `pytest` in the terminal to run tests make sure the environment has been installed correctly.
-
-
 </details>
 
+<details>
+  <summary>Common issues</summary>
+
+1. Database cannot connect / authentication is wrong.
+   - Check that the `DATABASE_URI` being used in the repository matches up and the postgres container is running in docker. You may need to recreate the database.
+2. Can't start up the dev environment on VS Code.
+   - You may need to delete instances of the containers which may have conflicting names with your existing configuration. Alternatively you can also change the config file.
+</details>
+
+## App Endpoints
+
+```text
+/index              - Root URL
+/payment-methods    
+                    - GET : List all payment methods for a user
+                    - POST: Create a payment method
+/payment-methods/:id
+                    - GET: Provide detailed information about an existing payment method
+                    - PUT: Update a given payment method
+                    - DELETE: Delete a payment method
+```
 
 ## Contents
 
