@@ -5,6 +5,7 @@ TestYourResourceModel API Service Test Suite
 import os
 import logging
 from unittest import TestCase
+
 from wsgi import app
 from tests.factories import CreditCardFactory, PayPalFactory
 from service.common import status
@@ -15,6 +16,7 @@ DATABASE_URI = os.getenv(
 )
 
 BASE_URL = "/payment-method"
+LIST_URL = BASE_URL + "s"
 
 
 ######################################################################
@@ -163,5 +165,29 @@ class TestPaymentsService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(len(response.data), 0)
         # make sure they are deleted
-        # response = self.client.get(f"{BASE_URL}/{test_payment_method.id}")
-        # self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        response = self.client.get(f"{BASE_URL}/{test_payment_method.id}")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_list_payment_methods(self):
+        """It should List all PaymentMethods"""
+        first_payment_method = CreditCardFactory()
+        first_payment_method.create()
+        second_payment_method = CreditCardFactory()
+        second_payment_method.create()
+        response = self.client.get(LIST_URL)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), 2)
+        response = self.client.get(f"{LIST_URL}?name={second_payment_method.name}")
+        data = response.get_json()
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0], second_payment_method.serialize())
+
+    def test_get_payment_method(self):
+        """It should Get a single PaymentMethod"""
+        test_payment_method = CreditCardFactory()
+        test_payment_method.create()
+        response = self.client.get(f"{BASE_URL}/{test_payment_method.id}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(data["name"], test_payment_method.name)

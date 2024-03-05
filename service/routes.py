@@ -133,13 +133,13 @@ def delete_payment_method(payment_method_id):
     """
     Delete a Payment Method
 
-    This endpoint will delete a Payment Method based the id specified in the path
+    This endpoint will delete a PaymentMethod based the id specified in the path
     """
     app.logger.info("Request to delete payment with id: %d", payment_method_id)
 
-    payment = PaymentMethod.find(payment_method_id)
-    if payment:
-        payment.delete()
+    payment_method = PaymentMethod.find(payment_method_id)
+    if payment_method:
+        payment_method.delete()
 
     app.logger.info("Payment with ID: %d delete complete.", payment_method_id)
     return "", status.HTTP_204_NO_CONTENT
@@ -166,3 +166,42 @@ def check_content_type(content_type):
     abort(
         status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, f"Content-Type must be {content_type}"
     )
+
+
+@app.route("/payment-methods", methods=["GET"])
+def list_payment_methods():
+    """Returns all of the PaymentMethods"""
+    app.logger.info("Request for payment method list")
+
+    payment_methods = []
+
+    # See if any query filters were passed in
+    name = request.args.get("name")
+    if name:
+        payment_methods = PaymentMethod.find_by_name(name)
+    else:
+        payment_methods = PaymentMethod.all()
+
+    results = [payment_method.serialize() for payment_method in payment_methods]
+    app.logger.info("Returning %d payment methods", len(results))
+    return jsonify(results), status.HTTP_200_OK
+
+
+@app.route("/payment-method/<int:payment_method_id>", methods=["GET"])
+def get_payment_method(payment_method_id):
+    """
+    Retrieve a single PaymentMethod
+
+    This endpoint will return a PaymentMethod based on its ID
+    """
+    app.logger.info("Request for payment with id: %s", payment_method_id)
+
+    payment_method = PaymentMethod.find(payment_method_id)
+    if not payment_method:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"PaymentMethod with id '{payment_method_id}' was not found.",
+        )
+
+    app.logger.info("Returning PaymentMethod: %s", payment_method.name)
+    return jsonify(payment_method.serialize()), status.HTTP_200_OK
