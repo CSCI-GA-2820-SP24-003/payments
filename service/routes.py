@@ -24,8 +24,8 @@ and Delete Payments from the inventory of payments in the PaymentShop
 
 from flask import jsonify, request, abort
 from flask import current_app as app  # Import Flask application
-from service.models import PaymentMethod, PaymentMethodType, CreditCard, PayPal
 from service.common import status  # HTTP Status Codes
+from service.models import PaymentMethod, PaymentMethodType, CreditCard, PayPal
 
 
 ######################################################################
@@ -193,3 +193,12 @@ def check_content_type(content_type):
     abort(
         status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, f"Content-Type must be {content_type}"
     )
+
+
+######################################################################
+# Logs error messages before aborting
+######################################################################
+def error(status_code, reason):
+    """Logs the error and then aborts"""
+    app.logger.error(reason)
+    abort(status_code, reason)

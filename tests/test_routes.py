@@ -10,12 +10,10 @@ from tests.factories import CreditCardFactory, PayPalFactory
 from service.common import status
 from service.models import db, PaymentMethod
 
-from .factories import PaymentMethodFactory,CreditCardFactory()
-
-
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/postgres"
 )
+
 BASE_URL = "/payment-method"
 
 ######################################################################
