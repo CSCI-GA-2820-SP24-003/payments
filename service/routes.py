@@ -42,7 +42,7 @@ def index():
             methods=list(
                 [
                     {
-                        "path": "/payment-methods",
+                        "path": "/payment-method",
                         "method": "GET",
                         "operation": "Read",
                         "description": "List all payment methods for a user",
