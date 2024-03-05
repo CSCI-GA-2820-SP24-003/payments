@@ -94,7 +94,7 @@ def index():
 ######################################################################
 # UPDATE AN EXISTING PAYMENT METHOD
 ######################################################################
-@app.route("/payments/<int:id>", methods=["PUT"])
+@app.route("/payments/<int:payment_method_id>", methods=["PUT"])
 def update_payments(payment_method_id):
     """
     Update a PaymentMethod
@@ -111,7 +111,7 @@ def update_payments(payment_method_id):
         )
 
     payment.deserialize(request.get_json())
-    payment.id = id
+    payment.id = payment_method_id
     payment.update()
 
 
