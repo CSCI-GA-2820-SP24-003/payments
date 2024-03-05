@@ -10,7 +10,7 @@ from tests.factories import CreditCardFactory, PayPalFactory
 from service.common import status
 from service.models import db, PaymentMethod
 
-from .factories import PaymentMethodFactory
+from .factories import PaymentMethodFactory,CreditCardFactory()
 
 
 DATABASE_URI = os.getenv(
