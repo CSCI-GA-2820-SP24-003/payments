@@ -26,6 +26,18 @@ class PaymentMethodType(Enum):
     PAYPAL = "PAYPAL"
 
 
+def convert_str_to_payment_method_type_enum(value):
+    """Converts a given str to PaymentMethodType enum"""
+    if isinstance(value, PaymentMethodType):
+        return value
+
+    for item in PaymentMethodType:
+        if item.value == value:
+            return item
+
+    return None
+
+
 class PaymentMethod(db.Model):
     """Class that represents Payment Method resource"""
 
