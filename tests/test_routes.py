@@ -5,7 +5,6 @@ TestYourResourceModel API Service Test Suite
 import os
 import logging
 from unittest import TestCase
-
 from wsgi import app
 from tests.factories import CreditCardFactory, PayPalFactory
 from service.common import status
@@ -89,22 +88,6 @@ class TestPaymentsService(TestCase):
             is_path_and_method_in_list(path="/payment-method/:id", method="PUT")
         )
 
-    def test_update_payment_method(self):
-        """It should Update an existing Payment Method"""
-        # create a payment to update
-        test_payment = CreditCardFactory()
-        response = self.client.post(BASE_URL, json=test_payment.serialize())
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-        # update the payment
-        new_payment = response.get_json()
-        logging.debug(new_payment)
-        new_payment["name"] = "unknown"
-        response = self.client.put(f"{BASE_URL}/{new_payment['id']}", json=new_payment)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        updated_payment = response.get_json()
-        self.assertEqual(updated_payment["name"], "unknown")
-
     def test_create_credit_card_payment_method(self):
         """It should create a new CreditCard"""
         credit_card = CreditCardFactory()
@@ -174,6 +157,22 @@ class TestPaymentsService(TestCase):
         resp = self.client.trace(BASE_URL)
         self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
+    def test_update_payment_method(self):
+        """It should Update an existing Payment Method"""
+        # create a payment to update
+        test_payment = CreditCardFactory()
+        response = self.client.post(BASE_URL, json=test_payment.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # update the payment
+        new_payment = response.get_json()
+        logging.debug(new_payment)
+        new_payment["name"] = "unknown"
+        response = self.client.put(f"{BASE_URL}/{new_payment['id']}", json=new_payment)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        updated_payment = response.get_json()
+        self.assertEqual(updated_payment["name"], "unknown")
+
     def test_delete_payment_method(self):
         """It should Delete a Payment Method"""
         test_payment_method = CreditCardFactory()
@@ -208,4 +207,3 @@ class TestPaymentsService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
         self.assertEqual(data["name"], test_payment_method.name)
-
