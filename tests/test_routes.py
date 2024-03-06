@@ -21,6 +21,8 @@ LIST_URL = BASE_URL + "s"
 #  T E S T   C A S E S
 ######################################################################
 # pylint: disable=too-many-public-methods
+
+
 class TestPaymentsService(TestCase):
     """REST API Server Tests"""
 
@@ -153,16 +155,18 @@ class TestPaymentsService(TestCase):
 
     def test_update_payment_method(self):
         """It should Update an existing Payment Method"""
-        # create a payment to update
-        test_payment = CreditCardFactory()
-        response = self.client.post(BASE_URL, json=test_payment.serialize())
+        # create a payment method to update
+        test_payment_method = CreditCardFactory()
+        response = self.client.post(BASE_URL, json=test_payment_method.serialize())
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        # update the payment
-        new_payment = response.get_json()
-        logging.debug(new_payment)
-        new_payment["name"] = "unknown"
-        response = self.client.put(f"{BASE_URL}/{new_payment['id']}", json=new_payment)
+        # update the payment method
+        payment_method = response.get_json()
+        logging.debug(payment_method)
+        payment_method["name"] = "unknown"
+        response = self.client.put(
+            f"{BASE_URL}/{payment_method['id']}", json=payment_method
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         updated_payment = response.get_json()
         self.assertEqual(updated_payment["name"], "unknown")

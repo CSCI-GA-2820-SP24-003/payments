@@ -128,7 +128,7 @@ def create_payment_method():
 ######################################################################
 # UPDATE AN EXISTING PAYMENT METHOD
 ######################################################################
-@app.route("/payments/<int:payment_method_id>", methods=["PUT"])
+@app.route("/payment-method/<int:payment_method_id>", methods=["PUT"])
 def update_payment_method(payment_method_id):
     """
     Update a PaymentMethod
