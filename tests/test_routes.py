@@ -5,7 +5,6 @@ TestYourResourceModel API Service Test Suite
 import os
 import logging
 from unittest import TestCase
-
 from wsgi import app
 from tests.factories import CreditCardFactory, PayPalFactory
 from service.common import status
@@ -17,7 +16,6 @@ DATABASE_URI = os.getenv(
 
 BASE_URL = "/payment-method"
 LIST_URL = BASE_URL + "s"
-
 
 ######################################################################
 #  T E S T   C A S E S
@@ -50,10 +48,6 @@ class TestPaymentsService(TestCase):
     def tearDown(self):
         """This runs after each test"""
         db.session.remove()
-
-    ######################################################################
-    #  P L A C E   T E S T   C A S E S   H E R E
-    ######################################################################
 
     def test_index(self):
         """It should call the home page and receive information about existing methods"""
@@ -156,6 +150,22 @@ class TestPaymentsService(TestCase):
         """It should respond with 405 when trying to use unsupported method"""
         resp = self.client.trace(BASE_URL)
         self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_update_payment_method(self):
+        """It should Update an existing Payment Method"""
+        # create a payment to update
+        test_payment = CreditCardFactory()
+        response = self.client.post(BASE_URL, json=test_payment.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # update the payment
+        new_payment = response.get_json()
+        logging.debug(new_payment)
+        new_payment["name"] = "unknown"
+        response = self.client.put(f"{BASE_URL}/{new_payment['id']}", json=new_payment)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        updated_payment = response.get_json()
+        self.assertEqual(updated_payment["name"], "unknown")
 
     def test_delete_payment_method(self):
         """It should Delete a Payment Method"""
