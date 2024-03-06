@@ -174,7 +174,7 @@ def delete_payment_method(payment_method_id):
 
 
 ######################################################################
-# LIST A PAYMENT METHOD
+# LIST PAYMENT METHODS
 ######################################################################
 @app.route("/payment-methods", methods=["GET"])
 def list_payment_methods():
