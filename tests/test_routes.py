@@ -21,8 +21,6 @@ LIST_URL = BASE_URL + "s"
 #  T E S T   C A S E S
 ######################################################################
 # pylint: disable=too-many-public-methods
-
-
 class TestPaymentsService(TestCase):
     """REST API Server Tests"""
 
@@ -50,10 +48,6 @@ class TestPaymentsService(TestCase):
     def tearDown(self):
         """This runs after each test"""
         db.session.remove()
-
-    ######################################################################
-    #  P L A C E   T E S T   C A S E S   H E R E
-    ######################################################################
 
     def test_index(self):
         """It should call the home page and receive information about existing methods"""
