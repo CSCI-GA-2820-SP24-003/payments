@@ -42,7 +42,7 @@ def index():
             methods=list(
                 [
                     {
-                        "path": "/payment-methods",
+                        "path": "/payments",
                         "method": "GET",
                         "operation": "Read",
                         "description": "List all payment methods for a user",
@@ -50,7 +50,7 @@ def index():
                         "response_body": "Payment method records",
                     },
                     {
-                        "path": "/payment-method/:id",
+                        "path": "/payments/:id",
                         "method": "GET",
                         "operation": "Read",
                         "description": "Provide detailed information about an existing payment method",
@@ -58,7 +58,7 @@ def index():
                         "response_body": "Payment method record",
                     },
                     {
-                        "path": "/payment-method",
+                        "path": "/payments",
                         "method": "POST",
                         "operation": "Create",
                         "description": "Create a payment method",
@@ -66,7 +66,7 @@ def index():
                         "response_body": "None",
                     },
                     {
-                        "path": "/payment-method/:id",
+                        "path": "/payments/:id",
                         "method": "PUT",
                         "operation": "Update",
                         "description": "Update a given payment method",
@@ -74,7 +74,7 @@ def index():
                         "response_body": "None",
                     },
                     {
-                        "path": "/payment-method/:id",
+                        "path": "/payments/:id",
                         "method": "DELETE",
                         "operation": "Delete",
                         "description": "Delete a given payment method",
@@ -96,7 +96,7 @@ def index():
 ######################################################################
 #  CREATE A PAYMENT METHOD
 ######################################################################
-@app.route("/payment-method", methods=["POST"])
+@app.route("/payments", methods=["POST"])
 def create_payment_method():
     """
     Creates Payment Method
@@ -128,7 +128,7 @@ def create_payment_method():
 ######################################################################
 # UPDATE AN EXISTING PAYMENT METHOD
 ######################################################################
-@app.route("/payment-method/<int:payment_method_id>", methods=["PUT"])
+@app.route("/payments/<int:payment_method_id>", methods=["PUT"])
 def update_payment_method(payment_method_id):
     """
     Update a PaymentMethod
@@ -156,7 +156,7 @@ def update_payment_method(payment_method_id):
 ######################################################################
 # DELETE A PAYMENT METHOD
 ######################################################################
-@app.route("/payment-method/<int:payment_method_id>", methods=["DELETE"])
+@app.route("/payments/<int:payment_method_id>", methods=["DELETE"])
 def delete_payment_method(payment_method_id):
     """
     Delete a Payment Method
@@ -176,7 +176,7 @@ def delete_payment_method(payment_method_id):
 ######################################################################
 # LIST PAYMENT METHODS
 ######################################################################
-@app.route("/payment-methods", methods=["GET"])
+@app.route("/payments", methods=["GET"])
 def list_payment_methods():
     """Returns all of the PaymentMethods"""
     app.logger.info("Request for payment method list")
@@ -198,7 +198,7 @@ def list_payment_methods():
 ######################################################################
 # GET A PAYMENT METHOD
 ######################################################################
-@app.route("/payment-method/<int:payment_method_id>", methods=["GET"])
+@app.route("/payments/<int:payment_method_id>", methods=["GET"])
 def get_payment_method(payment_method_id):
     """
     Retrieve a single PaymentMethod

@@ -14,8 +14,7 @@ DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/postgres"
 )
 
-BASE_URL = "/payment-method"
-LIST_URL = BASE_URL + "s"
+BASE_URL = "/payments"
 
 ######################################################################
 #  T E S T   C A S E S
@@ -68,20 +67,16 @@ class TestPaymentsService(TestCase):
                 item["path"] == path and item["method"] == method for item in methods
             )
 
+        self.assertTrue(is_path_and_method_in_list(path=BASE_URL, method="GET"))
         self.assertTrue(
-            is_path_and_method_in_list(path="/payment-methods", method="GET")
+            is_path_and_method_in_list(path=f"{BASE_URL}/:id", method="GET")
+        )
+        self.assertTrue(is_path_and_method_in_list(path=BASE_URL, method="POST"))
+        self.assertTrue(
+            is_path_and_method_in_list(path=f"{BASE_URL}/:id", method="DELETE")
         )
         self.assertTrue(
-            is_path_and_method_in_list(path="/payment-method/:id", method="GET")
-        )
-        self.assertTrue(
-            is_path_and_method_in_list(path="/payment-method", method="POST")
-        )
-        self.assertTrue(
-            is_path_and_method_in_list(path="/payment-method/:id", method="DELETE")
-        )
-        self.assertTrue(
-            is_path_and_method_in_list(path="/payment-method/:id", method="PUT")
+            is_path_and_method_in_list(path=f"{BASE_URL}/:id", method="PUT")
         )
 
     def test_create_credit_card_payment_method(self):
@@ -188,11 +183,11 @@ class TestPaymentsService(TestCase):
         first_payment_method.create()
         second_payment_method = CreditCardFactory()
         second_payment_method.create()
-        response = self.client.get(LIST_URL)
+        response = self.client.get(BASE_URL)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
         self.assertEqual(len(data), 2)
-        response = self.client.get(f"{LIST_URL}?name={second_payment_method.name}")
+        response = self.client.get(f"{BASE_URL}?name={second_payment_method.name}")
         data = response.get_json()
         self.assertEqual(len(data), 1)
         self.assertEqual(data[0], second_payment_method.serialize())
