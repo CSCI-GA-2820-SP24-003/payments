@@ -18,7 +18,7 @@ EXPIRY_MONTH_CONSTRAINTS = [1, 12]
 EXPIRY_YEAR_CONSTRAINTS = [2024, 2050]
 
 
-class CreditCard(PaymentMethod):
+class CreditCard(PaymentMethod):  # pylint: disable=too-many-instance-attributes
     """
     Class that represents CreditCard resource
     """
@@ -51,7 +51,7 @@ class CreditCard(PaymentMethod):
 
     def serialize(self):
         """Serializes a CreditCard into a dictionary"""
-        return {
+        return {  # pylint: disable=duplicate-code
             "id": self.id,
             "name": self.name,
             "type": self.type.value,
