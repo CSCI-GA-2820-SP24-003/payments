@@ -21,7 +21,7 @@ This service implements a REST API that allows you to Create, Read, Update
 and Delete Payments from the inventory of payments in the PaymentShop
 
 """
-from flask import jsonify, request, abort
+from flask import jsonify, request, url_for, abort
 from flask import current_app as app  # Import Flask application
 from service.common import status  # HTTP Status Codes
 from service.models import PaymentMethod, PaymentMethodType, CreditCard, PayPal
@@ -121,8 +121,11 @@ def create_payment_method():
     payment_method.deserialize(body)
     payment_method.create()
     message = payment_method.serialize()
+    location_url = url_for(
+        "get_payment_method", payment_method_id=payment_method.id, _external=True
+    )
 
-    return jsonify(message), status.HTTP_201_CREATED
+    return jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
 
 
 ######################################################################

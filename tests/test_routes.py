@@ -104,6 +104,26 @@ class TestPaymentsService(TestCase):
         self.assertEqual(created_card["zip_code"], credit_card.zip_code)
         self.assertEqual(created_card["billing_address"], credit_card.billing_address)
 
+        # Check that the location header is correct
+        location = resp.headers.get("Location", None)
+        self.assertIsNotNone(location)
+        resp = self.client.get(location)
+        new_created_card = resp.get_json()
+        self.assertIsNotNone(new_created_card["id"])
+        self.assertEqual(new_created_card["name"], credit_card.name)
+        self.assertEqual(new_created_card["type"], credit_card.type.value)
+        self.assertEqual(new_created_card["user_id"], credit_card.user_id)
+        self.assertEqual(new_created_card["first_name"], credit_card.first_name)
+        self.assertEqual(new_created_card["last_name"], credit_card.last_name)
+        self.assertEqual(new_created_card["card_number"], credit_card.card_number)
+        self.assertEqual(new_created_card["expiry_year"], credit_card.expiry_year)
+        self.assertEqual(new_created_card["expiry_month"], credit_card.expiry_month)
+        self.assertEqual(new_created_card["security_code"], credit_card.security_code)
+        self.assertEqual(new_created_card["zip_code"], credit_card.zip_code)
+        self.assertEqual(
+            new_created_card["billing_address"], credit_card.billing_address
+        )
+
     def test_create_paypal_payment_method(self):
         """It should create a new PayPal"""
         paypal = PayPalFactory()
@@ -121,6 +141,17 @@ class TestPaymentsService(TestCase):
         self.assertEqual(created_paypal["type"], paypal.type.value)
         self.assertEqual(created_paypal["user_id"], paypal.user_id)
         self.assertEqual(created_paypal["email"], paypal.email)
+
+        # Check that the location header is correct
+        location = resp.headers.get("Location", None)
+        self.assertIsNotNone(location)
+        resp = self.client.get(location)
+        new_created_paypal = resp.get_json()
+        self.assertIsNotNone(new_created_paypal["id"])
+        self.assertEqual(new_created_paypal["name"], paypal.name)
+        self.assertEqual(new_created_paypal["type"], paypal.type.value)
+        self.assertEqual(new_created_paypal["user_id"], paypal.user_id)
+        self.assertEqual(new_created_paypal["email"], paypal.email)
 
     def test_create_payment_method_with_no_type(self):
         """It should respond with 400 BAD REQUEST if type is wrong"""
