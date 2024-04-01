@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Payments service</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="static/css/styles.css" />
+  </head>
+  <body>
+    <div id="notification-container"></div>
+    <dialog>
+      <button id="close-dialog">Close</button>
+      <form id="dialog-form">
+        <h3 id="dialog-title">Payment Method</h3>
+        <input type="text" placeholder="Name" id="dialog-form-name" />
+        <input type="text" placeholder="User ID" id="dialog-form-user-id" />
+        <select id="dialog-form-type">
+          <option value="PAYPAL" selected>PayPal</option>
+          <option value="CREDIT_CARD">Credit Card</option>
+        </select>
+
+        <div id="dialog-form-paypal-fields">
+          <input type="email" placeholder="Email" id="dialog-form-email" />
+        </div>
+
+        <div id="dialog-form-credit-card-fields" style="display: none;">
+          <input
+            type="text"
+            placeholder="First name"
+            id="dialog-form-first-name"
+          />
+          <input
+            type="text"
+            placeholder="Last name"
+            id="dialog-form-last-name"
+          />
+          <input
+            type="text"
+            placeholder="Card number"
+            id="dialog-form-card-number"
+          />
+          <input
+            type="text"
+            placeholder="Expiry month (mm)"
+            id="dialog-form-expiry-month"
+          />
+          <input
+            type="text"
+            placeholder="Expiry year (yyyy)"
+            id="dialog-form-expiry-year"
+          />
+          <input
+            type="text"
+            placeholder="Security code"
+            id="dialog-form-security-code"
+          />
+          <input
+            type="text"
+            placeholder="Billing address"
+            id="dialog-form-billing-address"
+          />
+          <input type="text" placeholder="ZIP code" id="dialog-form-zip-code" />
+        </div>
+
+        <button id="dialog-form-submit">Submit</button>
+      </form>
+    </dialog>
+    <div id="dialog-backdrop"></div>
+    <header>
+      <h1>🏦 Payments Service dashboard</h1>
+    </header>
+    <main>
+      <div class="form-container">
+        <div class="form">
+          <input
+            type="text"
+            placeholder="Payment method ID"
+            id="retrieve-payment-method-id"
+          />
+          <button id="retrieve-payment-method">
+            Retrieve
+          </button>
+        </div>
+        <div class="form">
+          <select value="Payment method type" id="search-type">
+            <option>PayPal</option>
+            <option>Credit Card</option>
+          </select>
+
+          <input
+            type="text"
+            placeholder="Payment method name"
+            id="search-name"
+          />
+
+          <input
+            type="text"
+            placeholder="Payment method user ID"
+            id="search-user-id"
+          />
+
+          <button id="search-payment-methods">Search</button>
+        </div>
+        <div class="form">
+          <button id="create-new-payment-method">
+            Create new Payment Method
+          </button>
+        </div>
+      </div>
+
+      <table class="results-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Type</th>
+            <th>Name</th>
+            <th>User ID</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+
+        <tbody id="results-body">
+          <!-- Example Row -->
+          <!-- <tr> -->
+          <!--   <td>1</td> -->
+          <!--   <td>Paypal</td> -->
+          <!--   <td>aaa</td> -->
+          <!--   <td>12</td> -->
+          <!--   <td class="actions"> -->
+          <!--     <button>Edit</button> -->
+          <!--     <button class="delete">Delete</button> -->
+          <!--   </td> -->
+          <!-- </tr> -->
+        </tbody>
+      </table>
+    </main>
+
+    <script src="static/js/rest.js"></script>
+  </body>
+</html>

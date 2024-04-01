@@ -34,58 +34,7 @@ from service.models import PaymentMethod, PaymentMethodType, CreditCard, PayPal
 def index():
     """Root URL response"""
     app.logger.info("Request for root URL")
-    return (
-        jsonify(
-            name="Payments service",
-            version="1.0",
-            status=status.HTTP_200_OK,
-            methods=list(
-                [
-                    {
-                        "path": "/payments",
-                        "method": "GET",
-                        "operation": "Read",
-                        "description": "List all payment methods for a user",
-                        "request_body": "None",
-                        "response_body": "Payment method records",
-                    },
-                    {
-                        "path": "/payments/:id",
-                        "method": "GET",
-                        "operation": "Read",
-                        "description": "Provide detailed information about an existing payment method",
-                        "request_body": "None",
-                        "response_body": "Payment method record",
-                    },
-                    {
-                        "path": "/payments",
-                        "method": "POST",
-                        "operation": "Create",
-                        "description": "Create a payment method",
-                        "request_body": "Payment method record",
-                        "response_body": "None",
-                    },
-                    {
-                        "path": "/payments/:id",
-                        "method": "PUT",
-                        "operation": "Update",
-                        "description": "Update a given payment method",
-                        "request_body": "Payment method record",
-                        "response_body": "None",
-                    },
-                    {
-                        "path": "/payments/:id",
-                        "method": "DELETE",
-                        "operation": "Delete",
-                        "description": "Delete a given payment method",
-                        "request_body": "None",
-                        "response_body": "None",
-                    },
-                ]
-            ),
-        ),
-        status.HTTP_200_OK,
-    )
+    return app.send_static_file("index.html")
 
 
 ######################################################################

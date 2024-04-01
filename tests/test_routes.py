@@ -51,33 +51,10 @@ class TestPaymentsService(TestCase):
         db.session.remove()
 
     def test_index(self):
-        """It should call the home page and receive information about existing methods"""
+        """It should call the root URL and receive static index page"""
         response = self.client.get("/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        data = response.get_json()
-        methods = data["methods"]
-        self.assertEqual(data["status"], status.HTTP_200_OK)
-        self.assertEqual(data["name"], "Payments service")
-        self.assertEqual(data["version"], "1.0")
-        self.assertEqual(len(methods), 5)
-
-        # check if root path has definitions for all methods
-        def is_path_and_method_in_list(path, method):
-            return any(
-                item["path"] == path and item["method"] == method for item in methods
-            )
-
-        self.assertTrue(is_path_and_method_in_list(path=BASE_URL, method="GET"))
-        self.assertTrue(
-            is_path_and_method_in_list(path=f"{BASE_URL}/:id", method="GET")
-        )
-        self.assertTrue(is_path_and_method_in_list(path=BASE_URL, method="POST"))
-        self.assertTrue(
-            is_path_and_method_in_list(path=f"{BASE_URL}/:id", method="DELETE")
-        )
-        self.assertTrue(
-            is_path_and_method_in_list(path=f"{BASE_URL}/:id", method="PUT")
-        )
+        self.assertIn(b"Payments service", response.data)
 
     def test_create_credit_card_payment_method(self):
         """It should create a new CreditCard"""
