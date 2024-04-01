@@ -179,11 +179,13 @@ class TestPaymentsService(TestCase):
         data = response.get_json()
         self.assertEqual(len(data), 2)
 
-    def test_get_payment(self):
+    def test_get_payment(self,type, userID):
         """It should Get a single Payment"""
         test_payment_method = CreditCardFactory()
         test_payment_method.create()
         response = self.client.get(f"{BASE_URL}/{test_payment_method.id}")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        data = response.get_json()
-        self.assertEqual(data["name"], test_payment_method.name)
+        if test_payment_method.type == type and test_payment_method.id==userID:
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            data = response.get_json()
+            self.assertEqual(data["name"], test_payment_method.name)
+

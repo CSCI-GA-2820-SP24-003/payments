@@ -173,10 +173,8 @@ def check_content_type(content_type):
 
 @app.route("/payment-method", methods=["GET"])
 def list_payments_method():
-    """Returns all of the Payments"""
+    """Returns all the Payments"""
     app.logger.info("Request for payment list")
-
-    payment = []
 
     # See if any query filters were passed in
     category = request.args.get("category")
@@ -194,17 +192,21 @@ def list_payments_method():
 
 
 @app.route("/payment-method/<int:id>", methods=["GET"])
-def get_payment_method(id):
+def get_payment_method(id,type,userID):
     """
     Retrieve a single Payment
 
     This endpoint will return a Payment based on it's id
     """
-    app.logger.info("Request for payment with id: %s", id)
+    app.logger.info("Request for payment with id: %s", id, "with type: %s", type, "with userID: %s", userID)
 
     payment = PaymentMethod.find(id)
+
     if not payment:
         error(status.HTTP_404_NOT_FOUND, f"Payment with id '{id}' was not found.")
 
-    app.logger.info("Returning payment: %s", payment.name)
+    if payment.type==type and payment.user_id==userID:
+        app.logger.info("Returning payment: %s", payment.name)
+    else:
+        app.logger.info(f"There is no such a payment with specified type and user ID given id '{id}'")
     return jsonify(payment.serialize()), status.HTTP_200_OK
