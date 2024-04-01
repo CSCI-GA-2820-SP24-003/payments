@@ -106,6 +106,82 @@ function openCreateNewPaymentMethodModal() {
   });
 }
 
+function resetSearchResults() {
+  document.getElementById("results-body").innerHTML = "";
+}
+
+// function removeSearchResult(elementId) {
+//   document
+//     .getElementById("results-body")
+//     .removeChild(document.getElementById(elementId));
+// }
+
+function addSearchResult(payload) {
+  const resultsBody = document.getElementById("results-body");
+  const editButtonId = `edit-result-${payload.id}`;
+  const deleteButtonId = `delete-result-${payload.id}`;
+
+  const row = document.createElement("tr");
+
+  row.id = `payment-method-${payload.id}`;
+  row.innerHTML = `<td>${payload.id}</td>
+    <td>${payload.type}</td>
+    <td>${payload.name}</td>
+    <td>${payload.user_id}</td>
+    <td class="actions">
+      <button id="${editButtonId}">Edit</button>
+      <button id="${deleteButtonId}" class="delete">Delete</button>
+    </td>`;
+
+  resultsBody.appendChild(row);
+
+  // handle edit payment method
+  // document.getElementById(editButtonId).addEventListener("click", () => {
+  //   openCreateNewPaymentMethodModal();
+  // });
+
+  // handle delete payment method
+  // document.getElementById(deleteButtonId).addEventListener("click", () => {
+  //   removeSearchResult(row.id);
+  // });
+}
+
 document
   .getElementById("create-new-payment-method")
   .addEventListener("click", openCreateNewPaymentMethodModal);
+
+document
+  .getElementById("search-payment-methods")
+  .addEventListener("click", async () => {
+    // const type = document.getElementById("search-type");
+    // const name = document.getElementById("search-name");
+    // const userId = document.getElementById("search-user-id");
+
+    const res = await fetch(`/payments`);
+    const data = await res.json();
+
+    if (data.error) {
+      return Notifications.show({ type: "error", message: data.error });
+    }
+
+    resetSearchResults();
+    data.forEach((paymentMethod) => addSearchResult(paymentMethod));
+  });
+
+document
+  .getElementById("retrieve-payment-method")
+  .addEventListener("click", async () => {
+    const paymentMethodId = document.getElementById(
+      "retrieve-payment-method-id"
+    ).value;
+
+    const res = await fetch(`/payments/${paymentMethodId}`);
+    const data = await res.json();
+
+    if (data.error) {
+      return Notifications.show({ type: "error", message: data.error });
+    }
+
+    resetSearchResults();
+    addSearchResult(data);
+  });

@@ -17,6 +17,7 @@ def step_impl(context):
 
     # List all of the payment methods and delete them one by one
     rest_endpoint = f"{context.base_url}/payments"
+    print(rest_endpoint)
     context.resp = requests.get(rest_endpoint)
     assert context.resp.status_code == HTTP_200_OK
     for payment_method in context.resp.json():
@@ -29,15 +30,21 @@ def step_impl(context):
             "name": row['name'],
             "user_id": row['user_id'],
             "type": row['type'],
-            "email": row['email'],
-            "first_name": row['first_name'],
-            "last_name": row['last_name'],
-            "card_number": row['card_number'],
-            "expiry_month": row['expiry_month'],
-            "expiry_year": row['expiry_year'],
-            "security_code": row['security_code'],
-            "billing_address": row['billing_address'],
-            "zip_code": row['zip_code'],
         }
+
+        if row['type'] == 'PAYPAL':
+            payload["email"] = row["email"]
+        else:
+            payload["first_name"] = row['first_name']
+            payload["last_name"] = row['last_name']
+            payload["card_number"] = row['card_number']
+            payload["expiry_month"] = int(row['expiry_month'])
+            payload["expiry_year"] = int(row['expiry_year'])
+            payload["security_code"] = row['security_code']
+            payload["billing_address"] = row['billing_address']
+            payload["zip_code"] = row['zip_code']
+
         context.resp = requests.post(rest_endpoint, json=payload)
+        if context.resp.status_code == 400:
+            print(context.resp.text)
         assert context.resp.status_code == HTTP_201_CREATED

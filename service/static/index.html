@@ -83,20 +83,24 @@
           </button>
         </div>
         <div class="form">
-          <select value="Payment method type" id="type">
+          <select value="Payment method type" id="search-type">
             <option>PayPal</option>
             <option>Credit Card</option>
           </select>
 
-          <input type="text" placeholder="Payment method name" id="name" />
+          <input
+            type="text"
+            placeholder="Payment method name"
+            id="search-name"
+          />
 
           <input
             type="text"
             placeholder="Payment method user ID"
-            id="user-id"
+            id="search-user-id"
           />
 
-          <button>Search</button>
+          <button id="search-payment-methods">Search</button>
         </div>
         <div class="form">
           <button id="create-new-payment-method">
@@ -116,7 +120,7 @@
           </tr>
         </thead>
 
-        <tbody>
+        <tbody id="results-body">
           <!-- Example Row -->
           <!-- <tr> -->
           <!--   <td>1</td> -->
