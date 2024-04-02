@@ -218,11 +218,6 @@ def set_default_payment_method(payment_method_id):
     PaymentMethod.query.filter(PaymentMethod.user_id == payment_method.user_id).update({'is_default': False})
 
     payment_method.is_default = True
-    try:
-        payment_method.update()
-    except Exception as e:
-        app.logger.error("Error setting payment method as default: %s", str(e))
-        abort(status.HTTP_500_INTERNAL_SERVER_ERROR, "An error occurred while updating the payment method")
 
     app.logger.info("PaymentMethod with ID: %d set as default.", payment_method_id)
     return jsonify(payment_method.serialize()), status.HTTP_200_OK
