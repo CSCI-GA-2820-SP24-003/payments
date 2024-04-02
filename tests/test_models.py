@@ -388,3 +388,37 @@ class TestCreditCardModel(TestCaseBase):
         # delete the payment and make sure it isn't in the database
         payment.delete()
         self.assertEqual(len(CreditCard.all()), 0)
+
+    def test_default_payment_method_is_false_by_default(self):
+        """It should have is_default as False by default"""
+        payment_method = PaymentMethod(name="Test Method", user_id=1, type=PaymentMethodType.CREDIT_CARD)
+        db.session.add(payment_method)
+        db.session.commit()
+        self.assertFalse(payment_method.is_default)
+
+    def test_set_payment_method_as_default(self):
+        """It should set a payment method as default"""
+        payment_method = PaymentMethod(name="Test Method", user_id=1, type=PaymentMethodType.CREDIT_CARD, is_default=False)
+        db.session.add(payment_method)
+        db.session.commit()
+
+        payment_method.is_default = True
+        db.session.commit()
+        self.assertTrue(payment_method.is_default)
+
+    def test_ensure_only_one_default_payment_method(self):
+        """It should ensure that only one payment method is set as default"""
+        payment_method1 = PaymentMethod(name="Method 1", user_id=1, type=PaymentMethodType.CREDIT_CARD, is_default=True)
+        payment_method2 = PaymentMethod(name="Method 2", user_id=1, type=PaymentMethodType.PAYPAL, is_default=False)
+        db.session.add(payment_method1)
+        db.session.add(payment_method2)
+        db.session.commit()
+
+        payment_method1.is_default = False
+        payment_method2.is_default = True
+        db.session.commit()
+
+        pm1 = PaymentMethod.query.get(payment_method1.id)
+        pm2 = PaymentMethod.query.get(payment_method2.id)
+        self.assertFalse(pm1.is_default)
+        self.assertTrue(pm2.is_default)
