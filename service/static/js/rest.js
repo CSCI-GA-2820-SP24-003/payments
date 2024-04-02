@@ -53,6 +53,7 @@ function setupModal() {
   const dialogBackdrop = document.getElementById("dialog-backdrop");
   const closeDialogButton = document.getElementById("close-dialog");
   const dialogForm = document.getElementById("dialog-form");
+  const dialogFormSubmitButton = document.getElementById("dialog-form-submit");
 
   const dialogFormPayPalFields = document.getElementById(
     "dialog-form-paypal-fields"
@@ -62,25 +63,38 @@ function setupModal() {
     "dialog-form-credit-card-fields"
   );
 
+  // need to keep track of all intermediate event listener functions
+  // so that we can remove them when we close the modal
+  //
+  // otherwise it can, for example, trigger multiple submits as there will be
+  // multiple event listeners for click
+  const eventListeners = {};
+
   function open({ title, submitButtonText, onSubmit }) {
     document.getElementById("dialog-title").textContent = title;
 
-    const submitButton = document.getElementById("dialog-form-submit");
-    submitButton.textContent = submitButtonText;
+    eventListeners["dialogFormSubmitButton"] = { handleClick };
 
-    dialogForm.addEventListener("submit", async (event) => {
-      const formBody = handleFormSubmit(event);
-
-      await onSubmit(formBody);
-    });
+    dialogFormSubmitButton.textContent = submitButtonText;
+    dialogFormSubmitButton.addEventListener("click", handleClick);
 
     dialogBackdrop.style.display = "block";
     dialog.show();
+
+    async function handleClick(event) {
+      event.preventDefault();
+      const formBody = handleFormSubmit();
+      await onSubmit(formBody);
+    }
   }
 
   function close() {
     dialogForm.reset();
     dialog.close();
+    dialogFormSubmitButton.removeEventListener(
+      "click",
+      eventListeners["dialogFormSubmitButton"].handleClick
+    );
     dialogBackdrop.style.display = NONE;
     dialogFormPayPalFields.style.display = FLEX;
     dialogFormCreditCardFields.style.display = NONE;
@@ -96,9 +110,7 @@ function setupModal() {
       : FLEX;
   }
 
-  function handleFormSubmit(event) {
-    event.preventDefault();
-
+  function handleFormSubmit() {
     const fields =
       document.getElementById("type").value === PAYMENT_METHOD_TYPE.PAYPAL
         ? PAYPAL_FIELDS
