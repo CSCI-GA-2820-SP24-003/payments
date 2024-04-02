@@ -54,10 +54,31 @@ Scenario: Create a Credit Card payment method
     And I press the "Retrieve Payment Method" button
     Then I should see "yet another credit card" in the results
 
-
-
-
- 
+Scenario: Edit payment method
+    When I visit the "Home Page"
+    And I press the "Search Payment Methods" button
+    Then I should see "do not use" in the results
+    When I press on edit "do not use"
+    And I set the "Name" to "please use only this"
+    And I press the "Dialog Form Submit" button
+    Then I should see the "Success" notification
+    And I should see "please use only this" in the results
+    When I press on edit "best method"
+    And I select "Credit Card" in the "Type" dropdown
+    And I set the "First Name" to "John"
+    And I set the "Last Name" to "Doe"
+    And I set the "Card Number" to "1234123412341234"
+    And I set the "Expiry Month" to "10"
+    And I set the "Expiry Year" to "2025"
+    And I set the "Security Code" to "776"
+    And I set the "Billing Address" to "120 W 3rd St"
+    And I set the "Zip Code" to "11008"
+    And I press the "Dialog Form Submit" button
+    Then I should see the "Success" notification
+    When I copy the "Notification Payment Method ID"
+    And I paste to "Retrieve Payment Method ID"
+    And I press the "Retrieve Payment Method" button
+    Then I should see "CREDIT_CARD" in the results
 
 
 Scenario: List all payment methods

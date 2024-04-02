@@ -21,6 +21,12 @@ const CREDIT_CARD_FIELDS = [
   { name: "zip_code" },
 ];
 
+function getFieldsForType(type) {
+  return type === PAYMENT_METHOD_TYPE.PAYPAL
+    ? PAYPAL_FIELDS
+    : CREDIT_CARD_FIELDS;
+}
+
 const NOTIFICATION_CLOSE_DELAY = 5000; // 5 seconds for notifications to close
 
 class Notifications {
@@ -70,7 +76,7 @@ function setupModal() {
   // multiple event listeners for click
   const eventListeners = {};
 
-  function open({ title, submitButtonText, onSubmit }) {
+  function open({ title, submitButtonText, onSubmit, formBody }) {
     document.getElementById("dialog-title").textContent = title;
 
     eventListeners["dialogFormSubmitButton"] = { handleClick };
@@ -81,10 +87,19 @@ function setupModal() {
     dialogBackdrop.style.display = "block";
     dialog.show();
 
+    if (formBody) {
+      prefillFormBody(formBody);
+    }
+
     async function handleClick(event) {
       event.preventDefault();
-      const formBody = handleFormSubmit();
-      await onSubmit(formBody);
+      const payload = handleFormSubmit();
+
+      if (formBody) {
+        payload.id = formBody.id;
+      }
+
+      await onSubmit(payload);
     }
   }
 
@@ -96,28 +111,13 @@ function setupModal() {
       eventListeners["dialogFormSubmitButton"].handleClick
     );
     dialogBackdrop.style.display = NONE;
-    dialogFormPayPalFields.style.display = FLEX;
-    dialogFormCreditCardFields.style.display = NONE;
-  }
-
-  function handlePaymentMethodTypeChange(event) {
-    const isPayPalTypeSelected =
-      event.target.value === PAYMENT_METHOD_TYPE.PAYPAL;
-
-    dialogFormPayPalFields.style.display = isPayPalTypeSelected ? FLEX : NONE;
-    dialogFormCreditCardFields.style.display = isPayPalTypeSelected
-      ? NONE
-      : FLEX;
+    showFieldsFor(PAYMENT_METHOD_TYPE.PAYPAL);
   }
 
   function handleFormSubmit() {
-    const fields =
-      document.getElementById("type").value === PAYMENT_METHOD_TYPE.PAYPAL
-        ? PAYPAL_FIELDS
-        : CREDIT_CARD_FIELDS;
-
+    const type = document.getElementById("type").value;
     // map form values to an object
-    return fields.reduce((acc, curr) => {
+    return getFieldsForType(type).reduce((acc, curr) => {
       const { value } = document.getElementById(curr.name);
       acc[curr.name] = curr.type === "int" ? Number(value) : value;
 
@@ -125,12 +125,29 @@ function setupModal() {
     }, {});
   }
 
+  function showFieldsFor(type) {
+    const isPayPalTypeSelected = type === PAYMENT_METHOD_TYPE.PAYPAL;
+
+    dialogFormPayPalFields.style.display = isPayPalTypeSelected ? FLEX : NONE;
+    dialogFormCreditCardFields.style.display = isPayPalTypeSelected
+      ? NONE
+      : FLEX;
+  }
+
+  function prefillFormBody(formBody) {
+    const { type } = formBody;
+    showFieldsFor(type);
+    getFieldsForType(type).forEach(
+      ({ name }) => (document.getElementById(name).value = formBody[name])
+    );
+  }
+
   // force reset the form so that the information is not persisted after reload
   window.addEventListener("beforeunload", () => dialogForm.reset());
 
   document
     .getElementById("type")
-    .addEventListener("change", handlePaymentMethodTypeChange);
+    .addEventListener("change", (event) => showFieldsFor(event.target.value));
 
   closeDialogButton.addEventListener("click", () => close());
 
@@ -173,13 +190,43 @@ function resetSearchResults() {
   document.getElementById("results-body").innerHTML = "";
 }
 
-// function removeSearchResult(elementId) {
-//   document
-//     .getElementById("results-body")
-//     .removeChild(document.getElementById(elementId));
-// }
+function removeSearchResult(elementId) {
+  document
+    .getElementById("results-body")
+    .removeChild(document.getElementById(elementId));
+}
 
-function addSearchResult(payload) {
+async function onSubmitEditPayment(payload) {
+  const { id, ...formBody } = payload;
+  const res = await fetch(`/payments/${id}`, {
+    headers: { "Content-Type": "application/json" },
+    method: "PUT",
+    body: JSON.stringify(formBody),
+  });
+  const data = await res.json();
+
+  if (data.error) {
+    return Notifications.show({ type: "error", message: data.error });
+  }
+
+  addSearchResult(payload, true);
+  modal.close();
+  Notifications.show({
+    type: "success",
+    message: `Edited payment method with id: <span id="notification-payment-method-id">${data.id}</span>`,
+  });
+}
+
+function openEditPaymentMethod(payload) {
+  modal.open({
+    title: `Edit payment method "${payload.name}"`,
+    submitButtonText: "Save",
+    onSubmit: onSubmitEditPayment,
+    formBody: payload,
+  });
+}
+
+function addSearchResult(payload, replace) {
   const resultsBody = document.getElementById("results-body");
   const editButtonId = `edit-result-${payload.id}`;
   const deleteButtonId = `delete-result-${payload.id}`;
@@ -187,7 +234,9 @@ function addSearchResult(payload) {
   const row = document.createElement("tr");
 
   row.id = `payment-method-${payload.id}`;
-  row.innerHTML = `<td>${payload.id}</td>
+  row.innerHTML = `<td id="${payload.name
+    .toLowerCase()
+    .replaceAll(" ", "-")}-id">${payload.id}</td>
     <td>${payload.type}</td>
     <td>${payload.name}</td>
     <td>${payload.user_id}</td>
@@ -196,12 +245,16 @@ function addSearchResult(payload) {
       <button id="${deleteButtonId}" class="delete">Delete</button>
     </td>`;
 
-  resultsBody.appendChild(row);
+  if (replace) {
+    resultsBody.replaceChild(row, document.getElementById(row.id));
+  } else {
+    resultsBody.appendChild(row);
+  }
 
   // handle edit payment method
-  // document.getElementById(editButtonId).addEventListener("click", () => {
-  //   openCreateNewPaymentMethodModal();
-  // });
+  document.getElementById(editButtonId).addEventListener("click", () => {
+    openEditPaymentMethod(payload);
+  });
 
   // handle delete payment method
   // document.getElementById(deleteButtonId).addEventListener("click", () => {
