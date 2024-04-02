@@ -79,6 +79,7 @@ button:hover {
 
 input[type="text"],
 input[type="email"],
+input[type="number"],
 select {
   padding: var(--s1);
   font-size: 14px;

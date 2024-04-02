@@ -17,7 +17,50 @@ Scenario: The server is running
     Then I should see "Payments" in the title
     And I should not see "404 Not Found"
 
-Scenario: List all payments
+Scenario: Create a PayPal payment method
+    When I visit the "Home Page"
+    And I press the "Create new Payment Method" button
+    And I set the "Name" to "new payment method"
+    And I set the "User ID" to "12"
+    And I set the "Email" to "test@gmail.com"
+    And I press the "Dialog Form Submit" button
+    Then I should see the "Success" notification
+    When I copy the "Notification Payment Method ID"
+    And I paste to "Retrieve Payment Method ID"
+    And I press the "Retrieve Payment Method" button
+    Then I should see "new payment method" in the results
+
+Scenario: Create a Credit Card payment method
+    When I visit the "Home Page"
+    And I press the "Create new Payment Method" button
+    And I set the "Name" to "yet another credit card"
+    And I set the "User ID" to "100"
+    And I select "Credit Card" in the "Type" dropdown
+    And I set the "First Name" to "John"
+    And I set the "Last Name" to "Doe"
+    And I set the "Card Number" to "12341234"
+    And I set the "Expiry Month" to "10"
+    And I set the "Expiry Year" to "2025"
+    And I set the "Security Code" to "776"
+    And I set the "Billing Address" to "120 W 3rd St"
+    And I set the "Zip Code" to "11008"
+    And I press the "Dialog Form Submit" button
+    Then I should see the "Error" notification
+    When I set the "Card Number" to "1234123412341234"
+    And I press the "Dialog Form Submit" button
+    Then I should see the "Success" notification
+    When I copy the "Notification Payment Method ID"
+    And I paste to "Retrieve Payment Method ID"
+    And I press the "Retrieve Payment Method" button
+    Then I should see "yet another credit card" in the results
+
+
+
+
+ 
+
+
+Scenario: List all payment methods
     When I visit the "Home Page"
     And I press the "Search Payment Methods" button
     Then I should see "best method" in the results
