@@ -5,9 +5,10 @@ Steps file for web interactions with Selenium framework
 """
 # pylint: disable=function-redefined, missing-function-docstring
 # flake8: noqa
+import logging
 from behave import when, then
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver.support import expected_conditions
 
 
@@ -42,3 +43,40 @@ def step_impl(context, name):
         )
     )
     assert found
+
+@when('I set the "{element_name}" to "{value}"')
+def step_impl(context, element_name, value):
+    element_id = element_name.lower().replace(" ", "_")
+    element = context.driver.find_element(By.ID, element_id)
+    element.clear()
+    element.send_keys(value)
+
+@then('I should see the "{notification_type}" notification')
+def step_impl(context, notification_type):
+    css_selector_name = f'div.notification.{notification_type.lower()}'
+    found = WebDriverWait(context.driver, context.wait_seconds).until(
+        expected_conditions.presence_of_element_located((By.CSS_SELECTOR, css_selector_name))
+    )
+    assert found
+
+@when('I copy the "{element_name}"')
+def step_impl(context, element_name):
+    element_id = element_name.lower().replace(" ", "-")
+    element = context.driver.find_element(By.ID, element_id)
+    context.clipboard = element.text
+    logging.info('Clipboard contains: %s', context.clipboard)
+
+@when('I paste to "{element_name}"')
+def step_impl(context, element_name):
+    element_id = element_name.lower().replace(" ", "-")
+    element = WebDriverWait(context.driver, context.wait_seconds).until(
+        expected_conditions.presence_of_element_located((By.ID, element_id))
+    )
+    element.clear()
+    element.send_keys(context.clipboard)
+
+@when('I select "{text}" in the "{element_name}" dropdown')
+def step_impl(context, text, element_name):
+    element_id = element_name.lower()
+    element = Select(context.driver.find_element(By.ID, element_id))
+    element.select_by_visible_text(text)

@@ -3,6 +3,24 @@ const PAYMENT_METHOD_TYPE = {
   CREDIT_CARD: "CREDIT_CARD",
 };
 
+const COMMON_FIELDS = [
+  { name: "name" },
+  { name: "type" },
+  { name: "user_id", type: "int" },
+];
+const PAYPAL_FIELDS = [...COMMON_FIELDS, { name: "email" }];
+const CREDIT_CARD_FIELDS = [
+  ...COMMON_FIELDS,
+  { name: "first_name" },
+  { name: "last_name" },
+  { name: "card_number" },
+  { name: "expiry_month", type: "int" },
+  { name: "expiry_year", type: "int" },
+  { name: "security_code" },
+  { name: "billing_address" },
+  { name: "zip_code" },
+];
+
 const NOTIFICATION_CLOSE_DELAY = 5000; // 5 seconds for notifications to close
 
 class Notifications {
@@ -35,6 +53,7 @@ function setupModal() {
   const dialogBackdrop = document.getElementById("dialog-backdrop");
   const closeDialogButton = document.getElementById("close-dialog");
   const dialogForm = document.getElementById("dialog-form");
+  const dialogFormSubmitButton = document.getElementById("dialog-form-submit");
 
   const dialogFormPayPalFields = document.getElementById(
     "dialog-form-paypal-fields"
@@ -44,23 +63,38 @@ function setupModal() {
     "dialog-form-credit-card-fields"
   );
 
+  // need to keep track of all intermediate event listener functions
+  // so that we can remove them when we close the modal
+  //
+  // otherwise it can, for example, trigger multiple submits as there will be
+  // multiple event listeners for click
+  const eventListeners = {};
+
   function open({ title, submitButtonText, onSubmit }) {
     document.getElementById("dialog-title").textContent = title;
 
-    const submitButton = document.getElementById("dialog-form-submit");
-    submitButton.textContent = submitButtonText;
-    submitButton.addEventListener("click", (event) => {
-      event.preventDefault();
-      onSubmit();
-    });
+    eventListeners["dialogFormSubmitButton"] = { handleClick };
+
+    dialogFormSubmitButton.textContent = submitButtonText;
+    dialogFormSubmitButton.addEventListener("click", handleClick);
 
     dialogBackdrop.style.display = "block";
     dialog.show();
+
+    async function handleClick(event) {
+      event.preventDefault();
+      const formBody = handleFormSubmit();
+      await onSubmit(formBody);
+    }
   }
 
   function close() {
     dialogForm.reset();
     dialog.close();
+    dialogFormSubmitButton.removeEventListener(
+      "click",
+      eventListeners["dialogFormSubmitButton"].handleClick
+    );
     dialogBackdrop.style.display = NONE;
     dialogFormPayPalFields.style.display = FLEX;
     dialogFormCreditCardFields.style.display = NONE;
@@ -76,11 +110,26 @@ function setupModal() {
       : FLEX;
   }
 
+  function handleFormSubmit() {
+    const fields =
+      document.getElementById("type").value === PAYMENT_METHOD_TYPE.PAYPAL
+        ? PAYPAL_FIELDS
+        : CREDIT_CARD_FIELDS;
+
+    // map form values to an object
+    return fields.reduce((acc, curr) => {
+      const { value } = document.getElementById(curr.name);
+      acc[curr.name] = curr.type === "int" ? Number(value) : value;
+
+      return acc;
+    }, {});
+  }
+
   // force reset the form so that the information is not persisted after reload
   window.addEventListener("beforeunload", () => dialogForm.reset());
 
   document
-    .getElementById("dialog-form-type")
+    .getElementById("type")
     .addEventListener("change", handlePaymentMethodTypeChange);
 
   closeDialogButton.addEventListener("click", () => close());
@@ -93,16 +142,30 @@ function setupModal() {
 
 const modal = setupModal();
 
+async function onSubmitNewPayment(formBody) {
+  const res = await fetch("/payments", {
+    headers: { "Content-Type": "application/json" },
+    method: "POST",
+    body: JSON.stringify(formBody),
+  });
+  const data = await res.json();
+
+  if (data.error) {
+    return Notifications.show({ type: "error", message: data.error });
+  }
+
+  modal.close();
+  Notifications.show({
+    type: "success",
+    message: `Added payment method with id: <span id="notification-payment-method-id">${data.id}</span>`,
+  });
+}
+
 function openCreateNewPaymentMethodModal() {
   modal.open({
     title: "Create New Payment Method",
     submitButtonText: "Create",
-    onSubmit: () => {
-      Notifications.show({
-        type: "success",
-        message: "Added a new payment method!",
-      });
-    },
+    onSubmit: onSubmitNewPayment,
   });
 }
 
