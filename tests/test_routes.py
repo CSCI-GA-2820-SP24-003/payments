@@ -208,3 +208,51 @@ class TestPaymentsService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
         self.assertEqual(data["name"], test_payment_method.name)
+
+    def test_set_default_payment_method(self):
+        """It should set a Payment Method as default"""
+        # Create a payment method
+        test_payment_method = CreditCardFactory()
+        test_payment_method.create()
+
+        # Send a PUT request to set the payment method as default
+        response = self.client.put(f"{BASE_URL}/{test_payment_method.id}/set-default")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Check that the payment method is set as default
+        updated_payment_method = PaymentMethod.find(test_payment_method.id)
+        self.assertTrue(updated_payment_method.is_default)
+
+        # Check the response
+        data = response.get_json()
+        self.assertTrue(data["is_default"])
+
+    def test_set_default_payment_method_multiple(self):
+        """It should set a Payment Method as default and update other payment methods"""
+        # Create two payment methods
+        payment_method1 = CreditCardFactory(is_default=False)
+        payment_method1.create()
+        payment_method2 = CreditCardFactory(is_default=True)
+        payment_method2.create()
+
+        # Send a PUT request to set payment_method1 as default
+        response = self.client.put(f"{BASE_URL}/{payment_method1.id}/set-default")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Check that payment_method1 is set as default
+        updated_payment_method1 = PaymentMethod.find(payment_method1.id)
+        self.assertTrue(updated_payment_method1.is_default)
+
+        # Check that payment_method2 is no longer default
+        updated_payment_method2 = PaymentMethod.find(payment_method2.id)
+        self.assertFalse(updated_payment_method2.is_default)
+
+        # Check the response
+        data = response.get_json()
+        self.assertTrue(data["is_default"])
+
+    def test_set_default_payment_method_not_found(self):
+        """It should return a 404 if the Payment Method is not found"""
+        # Send a PUT request to set a non-existing payment method as default
+        response = self.client.put(f"{BASE_URL}/999/set-default")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

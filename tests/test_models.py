@@ -97,6 +97,26 @@ class TestPaymentMethodModel(TestCaseBase):
         with self.assertRaises(DataValidationError):
             payment_method.create()
 
+    def test_create_payment_method_with_default(self):
+        """It should create a PaymentMethod with is_default set to True"""
+        payment_method = PaymentMethod(name="Test Payment", user_id=1, is_default=True)
+        payment_method.create()
+        self.assertTrue(payment_method.is_default)
+
+    def test_serialize_payment_method_with_default(self):
+        """It should serialize a PaymentMethod with is_default field"""
+        payment_method = PaymentMethod(name="Test Payment", user_id=1, is_default=True)
+        data = payment_method.serialize()
+        self.assertIn("is_default", data)
+        self.assertTrue(data["is_default"])
+
+    def test_deserialize_payment_method_with_default(self):
+        """It should deserialize a PaymentMethod with is_default field"""
+        data = {"name": "Test Payment", "user_id": 1, "is_default": True}
+        payment_method = PaymentMethod()
+        payment_method.deserialize(data)
+        self.assertTrue(payment_method.is_default)
+
 
 class TestPayPalModel(TestCaseBase):
     """PayPal Model CRUD Tests"""
@@ -138,6 +158,25 @@ class TestPayPalModel(TestCaseBase):
                 **rest_args,
                 email="aa.com",
             )
+
+    def test_create_paypal_with_default(self):
+        """It should create a PayPal with is_default set to True"""
+        paypal = PayPalFactory(is_default=True)
+        self.assertTrue(paypal.is_default)
+
+    def test_serialize_paypal_with_default(self):
+        """It should serialize a PayPal with is_default field"""
+        paypal = PayPalFactory(is_default=True)
+        data = paypal.serialize()
+        self.assertIn("is_default", data)
+        self.assertTrue(data["is_default"])
+
+    def test_deserialize_paypal_with_default(self):
+        """It should deserialize a PayPal with is_default field"""
+        data = PayPalFactory(is_default=True).serialize()
+        paypal = PayPal()
+        paypal.deserialize(data)
+        self.assertTrue(paypal.is_default)
 
 
 class TestCreditCardModel(TestCaseBase):
@@ -388,3 +427,22 @@ class TestCreditCardModel(TestCaseBase):
         # delete the payment and make sure it isn't in the database
         payment.delete()
         self.assertEqual(len(CreditCard.all()), 0)
+
+    def test_create_credit_card_with_default(self):
+        """It should create a CreditCard with is_default set to True"""
+        credit_card = CreditCardFactory(is_default=True)
+        self.assertTrue(credit_card.is_default)
+
+    def test_serialize_credit_card_with_default(self):
+        """It should serialize a CreditCard with is_default field"""
+        credit_card = CreditCardFactory(is_default=True)
+        data = credit_card.serialize()
+        self.assertIn("is_default", data)
+        self.assertTrue(data["is_default"])
+
+    def test_deserialize_credit_card_with_default(self):
+        """It should deserialize a CreditCard with is_default field"""
+        data = CreditCardFactory(is_default=True).serialize()
+        credit_card = CreditCard()
+        credit_card.deserialize(data)
+        self.assertTrue(credit_card.is_default)
