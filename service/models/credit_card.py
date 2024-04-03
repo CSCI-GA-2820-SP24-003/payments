@@ -64,6 +64,7 @@ class CreditCard(PaymentMethod):  # pylint: disable=too-many-instance-attributes
             "security_code": self.security_code,
             "billing_address": self.billing_address,
             "zip_code": self.zip_code,
+            "is_default": self.is_default,
         }
 
     def deserialize(self, data):
@@ -85,6 +86,7 @@ class CreditCard(PaymentMethod):  # pylint: disable=too-many-instance-attributes
             self.security_code = data["security_code"]
             self.billing_address = data["billing_address"]
             self.zip_code = data["zip_code"]
+            self.is_default = data.get("is_default", False)
         except AttributeError as error:
             raise DataValidationError("Invalid attribute: " + error.args[0]) from error
         except KeyError as error:

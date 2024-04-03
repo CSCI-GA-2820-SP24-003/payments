@@ -50,6 +50,7 @@ class PaymentMethod(db.Model):
     name = db.Column(db.String(63), nullable=False)
     user_id = db.Column(db.Integer, nullable=False)
     type = db.Column(db.Enum(PaymentMethodType), nullable=False)
+    is_default = db.Column(db.Boolean, default=False)
 
     # https://docs.sqlalchemy.org/en/20/orm/inheritance.html
     #
