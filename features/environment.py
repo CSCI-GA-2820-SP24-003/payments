@@ -19,7 +19,6 @@ def before_all(context):
         context.driver = get_firefox()
     else:
         context.driver = get_chrome()
-    context.driver.maximize_window()
     context.driver.implicitly_wait(context.wait_seconds)
     context.config.setup_logging()
 
