@@ -75,9 +75,8 @@ class CreditCard(PaymentMethod):  # pylint: disable=too-many-instance-attributes
             data (dict): A dictionary containing the resource data
         """
         try:
-            self.name = data["name"]
+            self.set_common_fields(data, ['name', 'user_id', 'is_default'])
             self.type = convert_str_to_payment_method_type_enum(data["type"])
-            self.user_id = data["user_id"]
             self.first_name = data["first_name"]
             self.last_name = data["last_name"]
             self.card_number = data["card_number"]
@@ -86,7 +85,6 @@ class CreditCard(PaymentMethod):  # pylint: disable=too-many-instance-attributes
             self.security_code = data["security_code"]
             self.billing_address = data["billing_address"]
             self.zip_code = data["zip_code"]
-            self.is_default = data["is_default"]
         except AttributeError as error:
             raise DataValidationError("Invalid attribute: " + error.args[0]) from error
         except KeyError as error:

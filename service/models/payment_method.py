@@ -72,6 +72,14 @@ class PaymentMethod(db.Model):
     def deserialize(self, data: dict) -> None:
         """Convert a dictionary into an object"""
 
+    def set_common_fields(self, data, fields):
+        """Sets common fields for a PaymentMethod instance from given data."""
+        for field in fields:
+            if field == 'is_default':
+                setattr(self, field, data.get(field, False))
+            else:
+                setattr(self, field, data.get(field))
+
     def create(self) -> None:
         """
         Creates a PaymentMethod to the database
