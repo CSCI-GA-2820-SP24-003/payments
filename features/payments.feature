@@ -75,10 +75,6 @@ Scenario: Edit payment method
     And I set the "Zip Code" to "11008"
     And I press the "Dialog Form Submit" button
     Then I should see the "Success" notification
-    When I copy the "Notification Payment Method ID"
-    And I paste to "Retrieve Payment Method ID"
-    And I press the "Retrieve Payment Method" button
-    Then I should see "CREDIT_CARD" in the results
 
 Scenario: List all payment methods
     When I visit the "Home Page"

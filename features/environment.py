@@ -7,7 +7,7 @@ from selenium import webdriver
 
 WAIT_SECONDS = int(getenv("WAIT_SECONDS", "60"))
 BASE_URL = getenv("BASE_URL", "http://localhost:8000")
-DRIVER = getenv("DRIVER", "chrome").lower()
+DRIVER = getenv("DRIVER", "firefox").lower()
 
 
 def before_all(context):
@@ -19,6 +19,7 @@ def before_all(context):
         context.driver = get_firefox()
     else:
         context.driver = get_chrome()
+    context.driver.maximize_window()
     context.driver.implicitly_wait(context.wait_seconds)
     context.config.setup_logging()
 

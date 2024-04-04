@@ -86,6 +86,7 @@ function setupModal() {
 
     dialogBackdrop.style.display = "block";
     dialog.show();
+    dialog.style.visibility = 'visible';
 
     if (formBody) {
       prefillFormBody(formBody);
@@ -105,6 +106,7 @@ function setupModal() {
 
   function close() {
     dialogForm.reset();
+    dialog.style.visibility = 'hidden';
     dialog.close();
     dialogFormSubmitButton.removeEventListener(
       "click",
