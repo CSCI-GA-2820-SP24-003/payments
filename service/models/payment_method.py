@@ -138,3 +138,23 @@ class PaymentMethod(db.Model):
         """
         logger.info("Processing name query for %s ...", name)
         return cls.query.filter(cls.name == name)
+
+    @classmethod
+    def find_by_type(cls, payment_type):
+        """Returns all PaymentMethods with the given type (Paypal, CreditCard)
+
+        Args:
+            type (string): the type of the PaymentMethods you want to match
+        """
+        logger.info("Processing payment type query for %s ...", payment_type)
+        return cls.query.filter(cls.type == payment_type)
+
+    @classmethod
+    def find_by_user_id(cls, user_id):
+        """Returns all PaymentMethods with the given user_id
+
+        Args:
+            user_id (int): the user_id of the PaymentMethods you want to match
+        """
+        logger.info("Processing user_id query for %s ...", user_id)
+        return cls.query.filter(cls.user_id == user_id)

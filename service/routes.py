@@ -137,8 +137,15 @@ def list_payment_methods():
 
     # See if any query filters were passed in
     name = request.args.get("name")
+    payment_type = request.args.get("type")
+    user_id = request.args.get("user_id")
+
     if name:
         payment_methods = PaymentMethod.find_by_name(name)
+    elif payment_type:
+        payment_methods = PaymentMethod.find_by_type(payment_type.upper())
+    elif user_id:
+        payment_methods = PaymentMethod.find_by_user_id(int(user_id))
     else:
         payment_methods = PaymentMethod.all()
 
