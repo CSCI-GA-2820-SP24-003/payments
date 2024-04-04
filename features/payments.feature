@@ -80,7 +80,6 @@ Scenario: Edit payment method
     And I press the "Retrieve Payment Method" button
     Then I should see "CREDIT_CARD" in the results
 
-
 Scenario: List all payment methods
     When I visit the "Home Page"
     And I press the "Search Payment Methods" button
