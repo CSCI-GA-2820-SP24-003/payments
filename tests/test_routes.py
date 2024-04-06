@@ -56,6 +56,12 @@ class TestPaymentsService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn(b"Payments service", response.data)
 
+    def test_health(self):
+        """It should call /health and receive status OK"""
+        response = self.client.get("/health")
+        self.assertEqual(response.get_json(), {"status": "OK"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_create_credit_card_payment_method(self):
         """It should create a new CreditCard"""
         credit_card = CreditCardFactory()
