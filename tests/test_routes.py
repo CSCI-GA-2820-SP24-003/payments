@@ -231,6 +231,27 @@ class TestPaymentsService(TestCase):
         self.assertEqual(len(data), 1)
         self.assertEqual(data[0], second_payment_method.serialize())
 
+    def test_list_payment_methods_multiple_queries(self):
+        """It should List all PaymentMethods matching the filters"""
+        first_payment_method = CreditCardFactory()
+        first_payment_method.name = "a"
+        first_payment_method.user_id = 11
+        first_payment_method.create()
+        second_payment_method = PayPalFactory()
+        second_payment_method.user_id = 12
+        second_payment_method.create()
+        third_payment_method = CreditCardFactory()
+        third_payment_method.user_id = 12
+        third_payment_method.create()
+
+        response = self.client.get(f"{BASE_URL}?type=CREDIT_CARD")
+        data = response.get_json()
+        self.assertEqual(len(data), 2)
+        response = self.client.get(f"{BASE_URL}?type=CREDIT_CARD&user_id=12")
+        data = response.get_json()
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0], third_payment_method.serialize())
+
     def test_get_payment_method(self):
         """It should Get a single PaymentMethod"""
         test_payment_method = CreditCardFactory()

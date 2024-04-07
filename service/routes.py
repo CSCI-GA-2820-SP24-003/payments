@@ -133,23 +133,19 @@ def list_payment_methods():
     """Returns all of the PaymentMethods"""
     app.logger.info("Request for payment method list")
 
-    payment_methods = []
-
     # See if any query filters were passed in
     name = request.args.get("name")
     payment_type = request.args.get("type")
     user_id = request.args.get("user_id")
-
+    q = PaymentMethod.query
     if name:
-        payment_methods = PaymentMethod.find_by_name(name)
-    elif payment_type:
-        payment_methods = PaymentMethod.find_by_type(payment_type.upper())
-    elif user_id:
-        payment_methods = PaymentMethod.find_by_user_id(int(user_id))
-    else:
-        payment_methods = PaymentMethod.all()
+        q = PaymentMethod.find_by_name(name, q)
+    if payment_type:
+        q = PaymentMethod.find_by_type(payment_type.upper(), q)
+    if user_id:
+        q = PaymentMethod.find_by_user_id(int(user_id), q)
 
-    results = [payment_method.serialize() for payment_method in payment_methods]
+    results = [payment_method.serialize() for payment_method in q.all()]
     app.logger.info("Returning %d payment methods", len(results))
     return jsonify(results), status.HTTP_200_OK
 
