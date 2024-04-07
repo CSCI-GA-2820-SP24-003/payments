@@ -49,7 +49,7 @@ def step_impl(context, element_name, value):
     element_id = element_name.lower().replace(" ", "_")
     element = context.driver.find_element(By.ID, element_id)
     element.clear()
-    element.text = value
+    element.send_keys(value)
 
 @then('I should see the "{notification_type}" notification')
 def step_impl(context, notification_type):
