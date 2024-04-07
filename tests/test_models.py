@@ -91,6 +91,25 @@ class TestPaymentMethodModel(TestCaseBase):
         found_paypal = PaymentMethod.find_by_name(paypal.name)
         self.assertEqual(paypal, found_paypal[0])
 
+    def test_find_payment_method_by_type(self):
+        """It should find PaymentMethod by type"""
+        paypal = PayPalFactory()
+        paypal.create()
+        found_paypal = PaymentMethod.find_by_type(PaymentMethodType.PAYPAL)
+        self.assertEqual(paypal, found_paypal[0])
+        found_creditcard = PaymentMethod.find_by_type(PaymentMethodType.CREDIT_CARD)
+        self.assertEqual(len(found_creditcard.all()), 0)
+
+    def test_find_payment_method_by_user_id(self):
+        """It should find PaymentMethod by type"""
+        paypal = PayPalFactory()
+        uid = paypal.user_id
+        paypal.create()
+        found_uid = PaymentMethod.find_by_user_id(uid)
+        self.assertEqual(paypal, found_uid[0])
+        found_alt_uid = PaymentMethod.find_by_user_id(uid + 1)
+        self.assertEqual(len(found_alt_uid.all()), 0)
+
     def test_create_invalid_payment_method(self):
         """It should not create a PaymentMethod with invalid data"""
         payment_method = PaymentMethod(name="")
