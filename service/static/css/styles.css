@@ -113,7 +113,7 @@ select:focus {
 }
 
 #notification-container {
-  position: absolute;
+  position: fixed;
   z-index: 6000;
   bottom: var(--s3);
   right: var(--s3);
@@ -224,6 +224,7 @@ dialog {
   box-shadow: 0px 0px 8px 10px rgba(0, 0, 0, 0.3);
   overflow: auto;
   z-index: 550;
+  position: fixed;
 }
 
 #dialog-form input[type="text"],
@@ -266,7 +267,7 @@ dialog {
 
 #dialog-backdrop {
   display: none;
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;

@@ -101,3 +101,11 @@ def step_impl(context, name):
     result_id = context.driver.find_element(By.ID, element_id).text
     button_id = f"edit-result-{result_id}"
     context.driver.find_element(By.ID, button_id).click()
+
+
+@when('I press on delete "{name}"')
+def step_impl(context, name):
+    element_id = name.lower().replace(" ", "-") + "-id"
+    result_id = context.driver.find_element(By.ID, element_id).text
+    button_id = f"delete-result-{result_id}"
+    context.driver.find_element(By.ID, button_id).click()

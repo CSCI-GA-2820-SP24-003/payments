@@ -84,3 +84,10 @@ Scenario: List all payment methods
     And I should see "secondary" in the results
     And I should see "abc" in the results
     And I should see "efg" in the results
+
+Scenario: Should delete payment method
+    When I visit the "Home Page"
+    And I press the "Search Payment Methods" button
+    And I press on delete "do not use"
+    Then I should see the "Success" notification
+    And I should not see "do not use"
