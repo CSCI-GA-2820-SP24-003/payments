@@ -54,7 +54,8 @@ kubectl apply -f k8s/
 
 To tear down/stop deployment.
 ```bash
-kubectl apply -f k8s/
+kubectl delete -f k8s/
+make cluster-rm
 ```
 
 ## App Endpoints
