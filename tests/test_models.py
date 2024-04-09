@@ -116,6 +116,48 @@ class TestPaymentMethodModel(TestCaseBase):
         with self.assertRaises(DataValidationError):
             payment_method.create()
 
+    def test_set_payment_method_as_default(self):
+        """It should set a payment method as default and ensure others are not."""
+        payment_method1 = CreditCardFactory()
+        payment_method1.is_default = False
+        payment_method1.create()
+
+        payment_method2 = PayPalFactory()
+        payment_method2.is_default = False
+        payment_method2.create()
+
+        payment_method1.is_default = True
+        payment_method1.update()
+
+        updated_payment_method1 = PaymentMethod.find(payment_method1.id)
+        updated_payment_method2 = PaymentMethod.find(payment_method2.id)
+
+        self.assertTrue(updated_payment_method1.is_default)
+        self.assertFalse(updated_payment_method2.is_default)
+
+    def test_default_payment_method_uniqueness_per_user(self):
+        """It should ensure that only one payment method can be default for a user."""
+        user_id = 123
+        payment_method1 = CreditCardFactory(user_id=user_id, is_default=True)
+        payment_method1.create()
+
+        payment_method2 = PayPalFactory(user_id=user_id, is_default=False)
+        payment_method2.create()
+
+        payment_method2.is_default = True
+        payment_method2.update()
+
+        for pm in PaymentMethod.find_by_user_id(user_id):
+            if pm.id != payment_method2.id:
+                pm.is_default = False
+                pm.update()
+
+        updated_payment_method1 = PaymentMethod.find(payment_method1.id)
+        updated_payment_method2 = PaymentMethod.find(payment_method2.id)
+
+        self.assertFalse(updated_payment_method1.is_default)
+        self.assertTrue(updated_payment_method2.is_default)
+
 
 class TestPayPalModel(TestCaseBase):
     """PayPal Model CRUD Tests"""

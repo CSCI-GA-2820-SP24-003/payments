@@ -4,6 +4,7 @@ Factories for tests
 
 import random
 from factory.fuzzy import FuzzyInteger
+from factory.fuzzy import FuzzyChoice
 from factory import Factory, Faker
 from service.models import PaymentMethod, CreditCard, PayPal
 
@@ -18,6 +19,7 @@ class PaymentMethodFactory(Factory):
 
     name = Faker("name")
     user_id = FuzzyInteger(0, 1000)
+    is_default = FuzzyChoice([True, False])
 
 
 class CreditCardFactory(PaymentMethodFactory):

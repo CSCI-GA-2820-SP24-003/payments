@@ -266,3 +266,26 @@ class TestPaymentsService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
         self.assertEqual(data["name"], test_payment_method.name)
+
+    def test_set_default_payment_method(self):
+        """It should set a payment method as default and unset others for the user."""
+        user_id = 123
+        payment_method1 = CreditCardFactory(user_id=user_id, is_default=False)
+        payment_method1.create()
+
+        payment_method2 = CreditCardFactory(user_id=user_id, is_default=False)
+        payment_method2.create()
+
+        response = self.client.put(f"{BASE_URL}/{payment_method1.id}/set-default")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response_data = response.get_json()
+
+        self.assertEqual(response_data['id'], payment_method1.id)
+        self.assertTrue(response_data['is_default'])
+
+        updated_method1 = PaymentMethod.query.get(payment_method1.id)
+        self.assertTrue(updated_method1.is_default)
+
+        updated_method2 = PaymentMethod.query.get(payment_method2.id)
+        self.assertFalse(updated_method2.is_default)
