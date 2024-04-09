@@ -276,16 +276,18 @@ class TestPaymentsService(TestCase):
         payment_method2 = CreditCardFactory(user_id=user_id, is_default=False)
         payment_method2.create()
 
+        db.session.commit()
+
         response = self.client.put(f"{BASE_URL}/{payment_method1.id}/set-default")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        response_data = response.get_json()
-
-        self.assertEqual(response_data['id'], payment_method1.id)
-        self.assertTrue(response_data['is_default'])
-
         updated_method1 = PaymentMethod.query.get(payment_method1.id)
+        updated_method2 = PaymentMethod.query.get(payment_method2.id)
+
         self.assertTrue(updated_method1.is_default)
 
-        updated_method2 = PaymentMethod.query.get(payment_method2.id)
         self.assertFalse(updated_method2.is_default)
+
+        response_data = response.get_json()
+        self.assertTrue(response_data['is_default'])
+        self.assertEqual(response_data['id'], payment_method1.id)
