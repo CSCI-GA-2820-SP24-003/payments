@@ -86,7 +86,7 @@ function setupModal() {
 
     dialogBackdrop.style.display = "block";
     dialog.show();
-    dialog.style.visibility = 'visible';
+    dialog.style.visibility = "visible";
 
     if (formBody) {
       prefillFormBody(formBody);
@@ -106,7 +106,7 @@ function setupModal() {
 
   function close() {
     dialogForm.reset();
-    dialog.style.visibility = 'hidden';
+    dialog.style.visibility = "hidden";
     dialog.close();
     dialogFormSubmitButton.removeEventListener(
       "click",
@@ -259,9 +259,23 @@ function addSearchResult(payload, replace) {
   });
 
   // handle delete payment method
-  // document.getElementById(deleteButtonId).addEventListener("click", () => {
-  //   removeSearchResult(row.id);
-  // });
+  document
+    .getElementById(deleteButtonId)
+    .addEventListener("click", async () => {
+      try {
+        await fetch(`/payments/${payload.id}`, { method: "DELETE" });
+        removeSearchResult(row.id);
+        Notifications.show({
+          type: "success",
+          message: `Successfully deleted a payment method`,
+        });
+      } catch (e) {
+        return Notifications.show({
+          type: "error",
+          message: "An error occurred when trying to remove a payment method",
+        });
+      }
+    });
 }
 
 document
