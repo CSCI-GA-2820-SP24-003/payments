@@ -36,6 +36,27 @@ This project template contains starter code for your class project. The `/servic
    - You may need to delete instances of the containers which may have conflicting names with your existing configuration. Alternatively you can also change the config file.
 </details>
 
+## Local Deployment
+
+To launch deployment. Currently, the deployment build uses payments:3.0.
+
+```bash
+make cluster # if k8s cluster does not exist
+
+# build image for local registry if not existing
+docker build -t payments:3.0 .
+docker tag payments:3.0 cluster-registry:32000/payments:3.0
+docker push cluster-registry:32000/payments:3.0
+
+# launch app
+kubectl apply -f k8s/
+```
+
+To tear down/stop deployment.
+```bash
+kubectl apply -f k8s/
+```
+
 ## App Endpoints
 
 ```text
