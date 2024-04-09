@@ -285,11 +285,28 @@ document
 document
   .getElementById("search-payment-methods")
   .addEventListener("click", async () => {
-    // const type = document.getElementById("search-type");
-    // const name = document.getElementById("search-name");
-    // const userId = document.getElementById("search-user-id");
+    const type = document.getElementById("search-type");
+    const name = document.getElementById("search-name");
+    const userId = document.getElementById("search-user-id");
 
-    const res = await fetch(`/payments`);
+    const searchParams = new URLSearchParams();
+
+    if (type.value !== "ANY") {
+      searchParams.set("type", type.value);
+    }
+
+    if (name.value) {
+      searchParams.set("name", name.value);
+    }
+
+    if (userId.value) {
+      searchParams.set("user_id", Number(userId.value));
+    }
+
+    const searchString = searchParams.toString();
+    const res = await fetch(
+      `/payments${searchString ? "?" + searchString : ""}`
+    );
     const data = await res.json();
 
     if (data.error) {

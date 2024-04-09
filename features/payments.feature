@@ -25,8 +25,7 @@ Scenario: Create a PayPal payment method
     And I set the "Email" to "test@gmail.com"
     And I press the "Dialog Form Submit" button
     Then I should see the "Success" notification
-    When I copy the "Notification Payment Method ID"
-    And I paste to "Retrieve Payment Method ID"
+    When I copy the "Notification Payment Method ID" and paste to "Retrieve Payment Method ID"
     And I press the "Retrieve Payment Method" button
     Then I should see "new payment method" in the results
 
@@ -49,8 +48,7 @@ Scenario: Create a Credit Card payment method
     When I set the "Card Number" to "1234123412341234"
     And I press the "Dialog Form Submit" button
     Then I should see the "Success" notification
-    When I copy the "Notification Payment Method ID"
-    And I paste to "Retrieve Payment Method ID"
+    When I copy the "Notification Payment Method ID" and paste to "Retrieve Payment Method ID"
     And I press the "Retrieve Payment Method" button
     Then I should see "yet another credit card" in the results
 
@@ -84,6 +82,27 @@ Scenario: List all payment methods
     And I should see "secondary" in the results
     And I should see "abc" in the results
     And I should see "efg" in the results
+    When I set the "Search User ID" to "1" in query params
+    And I press the "Search Payment Methods" button
+    Then I should see "best method" in the results
+    And I should see "abc" in the results
+    And I should see "efg" in the results
+    And I should not see "do not use" in the results
+    And I should not see "secondary" in the results
+    When I set the "Search Name" to "abc" in query params
+    And I press the "Search Payment Methods" button
+    Then I should see "abc" in the results
+    And I should not see "do not use" in the results
+    And I should not see "efg" in the results
+    And I should not see "secondary" in the results
+    And I should not see "best method" in the results
+    When I select "PayPal" in the "Search Type" dropdown
+    And I press the "Search Payment Methods" button
+    Then I should not see "abc" in the results
+    And I should not see "do not use" in the results
+    And I should not see "efg" in the results
+    And I should not see "secondary" in the results
+    And I should not see "best method" in the results
 
 Scenario: Should delete payment method
     When I visit the "Home Page"
@@ -91,3 +110,24 @@ Scenario: Should delete payment method
     And I press on delete "do not use"
     Then I should see the "Success" notification
     And I should not see "do not use"
+    When I set the "Search User ID" to "1" in query params
+    And I press the "Search Payment Methods" button
+    Then I should see "best method" in the results
+    And I should see "abc" in the results
+    And I should see "efg" in the results
+    And I should not see "do not use" in the results
+    And I should not see "secondary" in the results
+    When I set the "Search Name" to "abc" in query params
+    And I press the "Search Payment Methods" button
+    Then I should see "abc" in the results
+    And I should not see "do not use" in the results
+    And I should not see "efg" in the results
+    And I should not see "secondary" in the results
+    And I should not see "best method" in the results
+    When I select "PayPal" in the "Search Type" dropdown
+    And I press the "Search Payment Methods" button
+    Then I should not see "abc" in the results
+    And I should not see "do not use" in the results
+    And I should not see "efg" in the results
+    And I should not see "secondary" in the results
+    And I should not see "best method" in the results

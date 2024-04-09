@@ -6,7 +6,6 @@ Steps file for web interactions with Selenium framework
 
 # pylint: disable=function-redefined, missing-function-docstring
 # flake8: noqa
-import logging
 from behave import when, then
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select, WebDriverWait
@@ -51,9 +50,23 @@ def step_impl(context, name):
     assert found
 
 
+@then('I should not see "{text_string}" in the results')
+def step_impl(context, text_string):
+    element = context.driver.find_element(By.ID, "results-body")
+    assert text_string not in element.text
+
+
 @when('I set the "{element_name}" to "{value}"')
 def step_impl(context, element_name, value):
     element_id = element_name.lower().replace(" ", "_")
+    element = context.driver.find_element(By.ID, element_id)
+    element.clear()
+    element.send_keys(value)
+
+
+@when('I set the "{element_name}" to "{value}" in query params')
+def step_impl(context, element_name, value):
+    element_id = element_name.lower().replace(" ", "-")
     element = context.driver.find_element(By.ID, element_id)
     element.clear()
     element.send_keys(value)
@@ -70,27 +83,19 @@ def step_impl(context, notification_type):
     assert found
 
 
-@when('I copy the "{element_name}"')
-def step_impl(context, element_name):
-    element_id = element_name.lower().replace(" ", "-")
-    element = context.driver.find_element(By.ID, element_id)
-    context.clipboard = element.text
-    logging.info("Clipboard contains: %s", context.clipboard)
-
-
-@when('I paste to "{element_name}"')
-def step_impl(context, element_name):
-    element_id = element_name.lower().replace(" ", "-")
-    element = WebDriverWait(context.driver, context.wait_seconds).until(
-        expected_conditions.presence_of_element_located((By.ID, element_id))
-    )
-    element.clear()
-    element.send_keys(context.clipboard)
+@when('I copy the "{copy_element_name}" and paste to "{paste_element_name}"')
+def step_impl(context, copy_element_name, paste_element_name):
+    copy_element_id = copy_element_name.lower().replace(" ", "-")
+    paste_element_id = paste_element_name.lower().replace(" ", "-")
+    copy_element = context.driver.find_element(By.ID, copy_element_id)
+    paste_element = context.driver.find_element(By.ID, paste_element_id)
+    paste_element.clear()
+    paste_element.send_keys(copy_element.text)
 
 
 @when('I select "{text}" in the "{element_name}" dropdown')
 def step_impl(context, text, element_name):
-    element_id = element_name.lower()
+    element_id = element_name.lower().replace(" ", "-")
     element = Select(context.driver.find_element(By.ID, element_id))
     element.select_by_visible_text(text)
 
