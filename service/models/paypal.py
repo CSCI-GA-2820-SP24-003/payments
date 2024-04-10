@@ -39,6 +39,7 @@ class PayPal(PaymentMethod):
             "type": self.type.value,
             "user_id": self.user_id,
             "email": self.email,
+            'is_default': self.is_default
         }
 
     def deserialize(self, data):
