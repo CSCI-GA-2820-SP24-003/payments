@@ -269,14 +269,13 @@ class TestPaymentsService(TestCase):
 
     def test_set_default_payment_method(self):
         """It should set a payment method as default and unset others for the user."""
-        user_id = 123
 
-        payment_method1 = CreditCardFactory(user_id=user_id, is_default=False)
+        payment_method1 = CreditCardFactory(is_default=False)
         response = self.client.post(BASE_URL, json=payment_method1.serialize())
         self.assertEqual(response.status_code, 201)
         payment_method1_id = response.get_json()['id']
 
-        payment_method2 = CreditCardFactory(user_id=user_id, is_default=True)
+        payment_method2 = CreditCardFactory(is_default=True)
         response = self.client.post(BASE_URL, json=payment_method2.serialize())
         self.assertEqual(response.status_code, 201)
         payment_method2_id = response.get_json()['id']
