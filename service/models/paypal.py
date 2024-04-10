@@ -39,6 +39,7 @@ class PayPal(PaymentMethod):
             "type": self.type.value,
             "user_id": self.user_id,
             "email": self.email,
+            "is_default": self.is_default,
         }
 
     def deserialize(self, data):
@@ -53,6 +54,7 @@ class PayPal(PaymentMethod):
             self.type = convert_str_to_payment_method_type_enum(data["type"])
             self.user_id = data["user_id"]
             self.email = data["email"]
+            self.is_default = data["is_default"]
         except AttributeError as error:
             raise DataValidationError("Invalid attribute: " + error.args[0]) from error
         except KeyError as error:
