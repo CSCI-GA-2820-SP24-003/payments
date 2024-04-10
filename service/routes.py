@@ -188,11 +188,14 @@ def get_payment_method(payment_method_id):
 @app.route("/payments/<int:payment_method_id>/set-default", methods=["PUT"])
 def set_default_payment_method(payment_method_id):
     """
-    Set a PaymentMethod as default
+    Set a payment method as default
 
-    This endpoint will set the specified PaymentMethod as default and unset others
+    This endpoint will mark a given payment method as the default one
+    and unset the is_default flag for all other payment methods.
     """
-    app.logger.info("Request to set PaymentMethod with id %d as default", payment_method_id)
+    app.logger.info(f"Setting payment method {payment_method_id} as default")
+
+    # Find the payment method to set as default
     payment_method = PaymentMethod.find(payment_method_id)
     if not payment_method:
         abort(
@@ -200,11 +203,12 @@ def set_default_payment_method(payment_method_id):
             f"PaymentMethod with id '{payment_method_id}' was not found.",
         )
 
-    PaymentMethod.query.filter_by(is_default=True).update({"is_default": False})
+    # Set the chosen payment method as default and others as not default
+    PaymentMethod.query.update({'is_default': False})
     payment_method.is_default = True
     payment_method.update()
 
-    app.logger.info("PaymentMethod with ID: %d set as default.", payment_method_id)
+    app.logger.info(f"Payment method {payment_method_id} set as default")
     return jsonify(payment_method.serialize()), status.HTTP_200_OK
 
 

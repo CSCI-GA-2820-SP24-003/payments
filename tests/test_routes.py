@@ -267,38 +267,42 @@ class TestPaymentsService(TestCase):
         data = response.get_json()
         self.assertEqual(data["name"], test_payment_method.name)
 
-    def test_set_default_payment_method_single(self):
-        """It should ensure a single payment can be set as default"""
-        payment_method = CreditCardFactory(is_default=False)
-        payment_method.create()
+    def test_set_payment_method_as_default(self):
+        """It should set a payment method as the default"""
+        payment_method = CreditCardFactory()
+        response = self.client.post(
+            BASE_URL,
+            json=payment_method.serialize(),
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        response = self.client.put(f"{BASE_URL}/{payment_method.id}/set-default")
+        created_method = response.get_json()
+        payment_method_id = created_method["id"]
 
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        updated_payment_method = PaymentMethod.query.get(payment_method.id)
-        self.assertTrue(updated_payment_method.is_default)
-
-        response_data = response.get_json()
-        self.assertTrue(response_data['is_default'])
-        self.assertEqual(response_data['id'], payment_method.id)
-
-    def test_change_default_payment_method(self):
-        """It should change the default payment method to another"""
-        payment_method1 = CreditCardFactory(is_default=False)
-        payment_method1.create()
-
-        payment_method2 = PayPalFactory(is_default=True)
-        payment_method2.create()
-
-        response = self.client.put(f"{BASE_URL}/{payment_method2.id}/set-default")
+        response = self.client.put(f"{BASE_URL}/{payment_method_id}/set-default")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        updated_payment_method1 = PaymentMethod.query.get(payment_method1.id)
-        updated_payment_method2 = PaymentMethod.query.get(payment_method2.id)
+        updated_method = response.get_json()
+        self.assertTrue(updated_method["is_default"])
 
-        self.assertTrue(updated_payment_method1.is_default)
-        self.assertFalse(updated_payment_method2.is_default)
+    def test_set_new_default_unsets_previous_default(self):
+        """It should unset the previous default when a new default is set"""
+        payment_method1 = CreditCardFactory()
+        payment_method2 = PayPalFactory()
+        resp1 = self.client.post(BASE_URL, json=payment_method1.serialize(), content_type="application/json")
+        resp2 = self.client.post(BASE_URL, json=payment_method2.serialize(), content_type="application/json")
+        self.assertEqual(resp1.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(resp2.status_code, status.HTTP_201_CREATED)
 
-        response_data = response.get_json()
-        self.assertTrue(response_data['is_default'])
-        self.assertEqual(response_data['id'], payment_method1.id)
+        method1_id = resp1.get_json()["id"]
+        self.client.put(f"{BASE_URL}/{method1_id}/set-default")
+
+        method2_id = resp2.get_json()["id"]
+        self.client.put(f"{BASE_URL}/{method2_id}/set-default")
+
+        resp1_updated = self.client.get(f"{BASE_URL}/{method1_id}")
+        self.assertFalse(resp1_updated.get_json()["is_default"])
+
+        resp2_updated = self.client.get(f"{BASE_URL}/{method2_id}")
+        self.assertTrue(resp2_updated.get_json()["is_default"])
