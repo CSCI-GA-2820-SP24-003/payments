@@ -270,24 +270,25 @@ class TestPaymentsService(TestCase):
     def test_set_default_payment_method(self):
         """It should set a payment method as default and unset others for the user."""
         user_id = 123
+
         payment_method1 = CreditCardFactory(user_id=user_id, is_default=False)
-        payment_method1.create()
+        response = self.client.post(BASE_URL, json=payment_method1.serialize())
+        self.assertEqual(response.status_code, 201)
+        payment_method1_id = response.get_json()['id']
 
-        payment_method2 = CreditCardFactory(user_id=user_id, is_default=False)
-        payment_method2.create()
+        payment_method2 = CreditCardFactory(user_id=user_id, is_default=True)
+        response = self.client.post(BASE_URL, json=payment_method2.serialize())
+        self.assertEqual(response.status_code, 201)
+        payment_method2_id = response.get_json()['id']
 
-        db.session.commit()
+        update_payload = {"is_default": True}
+        response = self.client.put(f"{BASE_URL}/{payment_method1_id}", json=update_payload)
+        self.assertEqual(response.status_code, 200)
 
-        response = self.client.put(f"{BASE_URL}/{payment_method1.id}/set-default")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.get(f"{BASE_URL}/{payment_method1_id}")
+        updated_payment_method1 = response.get_json()
+        self.assertTrue(updated_payment_method1['is_default'])
 
-        updated_method1 = PaymentMethod.query.get(payment_method1.id)
-        updated_method2 = PaymentMethod.query.get(payment_method2.id)
-
-        self.assertTrue(updated_method1.is_default)
-
-        self.assertFalse(updated_method2.is_default)
-
-        response_data = response.get_json()
-        self.assertTrue(response_data['is_default'])
-        self.assertEqual(response_data['id'], payment_method1.id)
+        response = self.client.get(f"{BASE_URL}/{payment_method2_id}")
+        updated_payment_method2 = response.get_json()
+        self.assertFalse(updated_payment_method2['is_default'])
