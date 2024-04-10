@@ -116,47 +116,53 @@ class TestPaymentMethodModel(TestCaseBase):
         with self.assertRaises(DataValidationError):
             payment_method.create()
 
-    def test_set_payment_method_as_default(self):
-        """It should set a payment method as default and ensure others are not."""
-        payment_method1 = CreditCardFactory()
-        payment_method1.is_default = False
-        payment_method1.create()
+    def test_set_payment_as_default(self):
+        """It should set a payment method as the default"""
+        payment_method = CreditCardFactory()
+        payment_method.create()
+        self.assertFalse(payment_method.is_default)
 
-        payment_method2 = PayPalFactory()
-        payment_method2.is_default = False
+        payment_method.is_default = True
+        payment_method.update()
+
+        updated_payment_method = PaymentMethod.find(payment_method.id)
+        self.assertTrue(updated_payment_method.is_default)
+
+    def test_unset_other_payment_methods_when_one_is_set(self):
+        """It should unset other payment methods when one is set as default"""
+        user_id = 1
+        payment_method1 = CreditCardFactory(user_id=user_id, is_default=False)
+        payment_method2 = PayPalFactory(user_id=user_id, is_default=False)
+        payment_method1.create()
         payment_method2.create()
 
         payment_method1.is_default = True
         payment_method1.update()
 
-        updated_payment_method1 = PaymentMethod.find(payment_method1.id)
-        updated_payment_method2 = PaymentMethod.find(payment_method2.id)
+        payment_method2 = PaymentMethod.find(payment_method2.id)
+        self.assertTrue(PaymentMethod.find(payment_method1.id).is_default)
+        self.assertFalse(payment_method2.is_default)
 
-        self.assertTrue(updated_payment_method1.is_default)
-        self.assertFalse(updated_payment_method2.is_default)
+    def test_default_status_persists(self):
+        """It should maintain the default status across updates"""
+        payment_method = CreditCardFactory(is_default=True)
+        payment_method.create()
 
-    def test_default_payment_method_uniqueness_per_user(self):
-        """It should ensure that only one payment method can be default for a user."""
-        user_id = 123
-        payment_method1 = CreditCardFactory(user_id=user_id, is_default=True)
-        payment_method1.create()
+        payment_method.name = "Updated Name"
+        payment_method.update()
 
-        payment_method2 = PayPalFactory(user_id=user_id, is_default=False)
-        payment_method2.create()
+        updated_payment_method = PaymentMethod.find(payment_method.id)
+        self.assertTrue(updated_payment_method.is_default)
 
-        payment_method2.is_default = True
-        payment_method2.update()
+    def test_find_default_payment(self):
+        """It should find the default payment method for a user"""
+        user_id = 1
+        CreditCardFactory(user_id=user_id, is_default=False).create()
+        default_method = CreditCardFactory(user_id=user_id, is_default=True)
+        default_method.create()
 
-        for pm in PaymentMethod.find_by_user_id(user_id):
-            if pm.id != payment_method2.id:
-                pm.is_default = False
-                pm.update()
-
-        updated_payment_method1 = PaymentMethod.find(payment_method1.id)
-        updated_payment_method2 = PaymentMethod.find(payment_method2.id)
-
-        self.assertFalse(updated_payment_method1.is_default)
-        self.assertTrue(updated_payment_method2.is_default)
+        found_default = PaymentMethod.find_default_for_user(user_id)
+        self.assertEqual(found_default.id, default_method.id)
 
 
 class TestPayPalModel(TestCaseBase):
