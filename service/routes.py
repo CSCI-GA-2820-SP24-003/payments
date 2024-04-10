@@ -185,7 +185,7 @@ def get_payment_method(payment_method_id):
 ######################################################################
 # SET DEFAULT PAYMENT METHOD
 ######################################################################
-@app.route("/payment-method/<int:payment_method_id>/set-default", methods=["PUT"])
+@app.route("/payments/<int:payment_method_id>/set-default", methods=["PUT"])
 def set_default_payment_method(payment_method_id):
     """
     Set a PaymentMethod as default
