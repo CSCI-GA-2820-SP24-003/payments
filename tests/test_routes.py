@@ -282,7 +282,7 @@ class TestPaymentsService(TestCase):
         """It should change the default payment method to another"""
         payment_method1 = CreditCardFactory(is_default=True)
         payment_method1.create()
-        
+
         payment_method2 = PayPalFactory(is_default=True)
         payment_method2.create()
 
@@ -291,6 +291,6 @@ class TestPaymentsService(TestCase):
 
         updated_payment_method1 = PaymentMethod.find(payment_method1.id)
         updated_payment_method2 = PaymentMethod.find(payment_method2.id)
-        
+
         self.assertFalse(updated_payment_method1.is_default)
         self.assertTrue(updated_payment_method2.is_default)
