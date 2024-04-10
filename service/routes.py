@@ -188,14 +188,13 @@ def get_payment_method(payment_method_id):
 @app.route("/payments/<int:payment_method_id>/set-default", methods=["PUT"])
 def set_default_payment_method(payment_method_id):
     """
-    Set a payment method as default
+    Set a payment method as default.
 
     This endpoint will mark a given payment method as the default one
-    and unset the is_default flag for all other payment methods.
+    and unset the is_default flag for all other payment methods for the same user.
     """
     app.logger.info(f"Setting payment method {payment_method_id} as default")
 
-    # Find the payment method to set as default
     payment_method = PaymentMethod.find(payment_method_id)
     if not payment_method:
         abort(
@@ -203,8 +202,11 @@ def set_default_payment_method(payment_method_id):
             f"PaymentMethod with id '{payment_method_id}' was not found.",
         )
 
-    # Set the chosen payment method as default and others as not default
-    PaymentMethod.query.update({'is_default': False})
+    PaymentMethod.query.filter(
+        PaymentMethod.user_id == payment_method.user_id,
+        PaymentMethod.id != payment_method_id
+    ).update({'is_default': False})
+
     payment_method.is_default = True
     payment_method.update()
 
