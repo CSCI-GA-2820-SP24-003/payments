@@ -116,6 +116,28 @@ class TestPaymentMethodModel(TestCaseBase):
         with self.assertRaises(DataValidationError):
             payment_method.create()
 
+    def test_set_default_payment_method(self):
+        """It should set a payment method as default and return the correct response."""
+        payment_method = CreditCardFactory.create()
+        self.assertFalse(payment_method.is_default)
+
+        payment_method.is_default = True
+        payment_method.update()
+
+        updated_payment_method = PaymentMethod.query.get(payment_method.id)
+        self.assertTrue(updated_payment_method.is_default)
+
+    def test_ensure_only_one_default_payment_method_after_update(self):
+        """It should ensure that only one payment method is default after an update."""
+        payment_method1 = CreditCardFactory.create(is_default=True)
+        payment_method2 = PayPalFactory.create(is_default=False)
+
+        payment_method2.is_default = True
+        payment_method2.update()
+
+        self.assertFalse(PaymentMethod.query.get(payment_method1.id).is_default)
+        self.assertTrue(PaymentMethod.query.get(payment_method2.id).is_default)
+
 
 class TestPayPalModel(TestCaseBase):
     """PayPal Model CRUD Tests"""

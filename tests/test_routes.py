@@ -266,3 +266,31 @@ class TestPaymentsService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
         self.assertEqual(data["name"], test_payment_method.name)
+
+    def test_set_default_payment_method_single(self):
+        """Ensure a single payment can be set as default"""
+        payment_method = CreditCardFactory()
+        payment_method.create()
+
+        response = self.client.put(f"{BASE_URL}/{payment_method.id}/set-default")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        updated_payment_method = PaymentMethod.find(payment_method.id)
+        self.assertTrue(updated_payment_method.is_default)
+
+    def test_change_default_payment_method(self):
+        """It should change the default payment method to another"""
+        payment_method1 = CreditCardFactory(is_default=True)
+        payment_method1.create()
+        
+        payment_method2 = PayPalFactory(is_default=True)
+        payment_method2.create()
+
+        response = self.client.put(f"{BASE_URL}/{payment_method2.id}/set-default")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        updated_payment_method1 = PaymentMethod.find(payment_method1.id)
+        updated_payment_method2 = PaymentMethod.find(payment_method2.id)
+        
+        self.assertFalse(updated_payment_method1.is_default)
+        self.assertTrue(updated_payment_method2.is_default)
