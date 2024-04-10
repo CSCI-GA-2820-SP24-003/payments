@@ -288,18 +288,21 @@ class TestPaymentsService(TestCase):
 
     def test_set_new_default_unsets_previous_default(self):
         """It should unset the previous default when a new default is set"""
-        payment_method1 = CreditCardFactory()
-        payment_method2 = PayPalFactory()
+        user_id = 123
+        payment_method1 = CreditCardFactory(user_id=user_id)
+        payment_method2 = PayPalFactory(user_id=user_id)
         resp1 = self.client.post(BASE_URL, json=payment_method1.serialize(), content_type="application/json")
-        resp2 = self.client.post(BASE_URL, json=payment_method2.serialize(), content_type="application/json")
         self.assertEqual(resp1.status_code, status.HTTP_201_CREATED)
+        resp2 = self.client.post(BASE_URL, json=payment_method2.serialize(), content_type="application/json")
         self.assertEqual(resp2.status_code, status.HTTP_201_CREATED)
 
         method1_id = resp1.get_json()["id"]
-        self.client.put(f"{BASE_URL}/{method1_id}/set-default")
+        response = self.client.put(f"{BASE_URL}/{method1_id}/set-default")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         method2_id = resp2.get_json()["id"]
-        self.client.put(f"{BASE_URL}/{method2_id}/set-default")
+        response = self.client.put(f"{BASE_URL}/{method2_id}/set-default")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         resp1_updated = self.client.get(f"{BASE_URL}/{method1_id}")
         self.assertFalse(resp1_updated.get_json()["is_default"])
