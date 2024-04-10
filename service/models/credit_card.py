@@ -64,6 +64,7 @@ class CreditCard(PaymentMethod):  # pylint: disable=too-many-instance-attributes
             "security_code": self.security_code,
             "billing_address": self.billing_address,
             "zip_code": self.zip_code,
+            "is_default": self.is_default,
         }
 
     def deserialize(self, data):

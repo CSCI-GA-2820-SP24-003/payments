@@ -18,6 +18,7 @@ class PaymentMethodFactory(Factory):
 
     name = Faker("name")
     user_id = FuzzyInteger(0, 1000)
+    is_default = False
 
 
 class CreditCardFactory(PaymentMethodFactory):

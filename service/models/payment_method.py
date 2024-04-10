@@ -50,6 +50,7 @@ class PaymentMethod(db.Model):
     name = db.Column(db.String(63), nullable=False)
     user_id = db.Column(db.Integer, nullable=False)
     type = db.Column(db.Enum(PaymentMethodType), nullable=False)
+    is_default = db.Column(db.Boolean(), default=False, nullable=False)
 
     # https://docs.sqlalchemy.org/en/20/orm/inheritance.html
     #
@@ -164,3 +165,8 @@ class PaymentMethod(db.Model):
         if q is None:
             q = cls.query
         return q.filter(cls.user_id == user_id)
+
+    @classmethod
+    def find_default_for_user(cls, user_id):
+        """Find the default payment method for a given user."""
+        return cls.query.filter_by(user_id=user_id, is_default=True).first()
