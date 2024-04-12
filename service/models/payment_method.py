@@ -167,6 +167,30 @@ class PaymentMethod(db.Model):
         return q.filter(cls.user_id == user_id)
 
     @classmethod
-    def find_default_for_user(cls, user_id):
-        """Find the default payment method for a given user."""
-        return cls.query.filter_by(user_id=user_id, is_default=True).first()
+    def set_default_for_user(cls, user_id, new_default_id):
+        """
+        Set a payment method as default for the user and unset others.
+        """
+        logger.info("Setting payment method %s as default for user %s", new_default_id, user_id)
+
+        try:
+            with db.session.begin():
+                new_default = cls.query.filter_by(id=new_default_id, user_id=user_id).first()
+                if not new_default:
+                    logger.error("Payment method %s not found for user %s", new_default_id, user_id)
+                    raise DataValidationError(f"Payment method {new_default_id} not found for user {user_id}")
+
+                cls.query.filter_by(user_id=user_id).update({'is_default': False})
+
+                new_default.is_default = True
+
+                db.session.commit()
+                logger.info("Payment method %s set as default for user %s", new_default_id, user_id)
+                return new_default
+
+        except Exception as e:
+            db.session.rollback()
+            logger.error("Error setting default payment method: %s", e)
+            raise DataValidationError(f"Error setting default payment method: {e}") from e
+
+        return None
