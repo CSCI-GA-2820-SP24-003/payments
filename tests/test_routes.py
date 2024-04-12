@@ -280,7 +280,10 @@ class TestPaymentsService(TestCase):
         created_method = response.get_json()
         payment_method_id = created_method["id"]
 
-        response = self.client.put(f"{BASE_URL}/{payment_method_id}/set-default")
+        response = self.client.put(
+            f"{BASE_URL}/{payment_method_id}/set-default",
+            json={'user_id': payment_method.user_id}
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         updated_method = response.get_json()
@@ -291,17 +294,25 @@ class TestPaymentsService(TestCase):
         user_id = 123
         payment_method1 = CreditCardFactory(user_id=user_id)
         payment_method2 = PayPalFactory(user_id=user_id)
+
         resp1 = self.client.post(BASE_URL, json=payment_method1.serialize(), content_type="application/json")
         self.assertEqual(resp1.status_code, status.HTTP_201_CREATED)
+        method1_id = resp1.get_json()["id"]
+
         resp2 = self.client.post(BASE_URL, json=payment_method2.serialize(), content_type="application/json")
         self.assertEqual(resp2.status_code, status.HTTP_201_CREATED)
+        method2_id = resp2.get_json()["id"]
 
-        method1_id = resp1.get_json()["id"]
-        response = self.client.put(f"{BASE_URL}/{method1_id}/set-default")
+        response = self.client.put(
+            f"{BASE_URL}/{method1_id}/set-default",
+            json={'user_id': user_id}
+            )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        method2_id = resp2.get_json()["id"]
-        response = self.client.put(f"{BASE_URL}/{method2_id}/set-default")
+        response = self.client.put(
+            f"{BASE_URL}/{method2_id}/set-default",
+            json={'user_id': user_id}
+            )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         resp1_updated = self.client.get(f"{BASE_URL}/{method1_id}")
