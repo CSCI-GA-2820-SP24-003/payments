@@ -198,9 +198,9 @@ def set_default_payment_method(payment_method_id):
     if payment_method:
         app.logger.info(f"Payment method {payment_method_id} set as default")
         return jsonify(payment_method.serialize()), status.HTTP_200_OK
-    else:
-        app.logger.error(f"PaymentMethod with id '{payment_method_id}' was not found or could not be set as default.")
-        abort(status.HTTP_404_NOT_FOUND, f"PaymentMethod with id '{payment_method_id}' was not found.")
+
+    app.logger.error(f"PaymentMethod with id '{payment_method_id}' was not found or could not be set as default.")
+    abort(status.HTTP_404_NOT_FOUND, f"PaymentMethod with id '{payment_method_id}' was not found.")
 
 
 ######################################################################
