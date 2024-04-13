@@ -112,6 +112,18 @@ class PaymentMethod(db.Model):
             logger.error("Error deleting PaymentMethod: %s", self)
             raise DataValidationError(e) from e
 
+    def set_default_for_user(self):
+        """
+        Set a payment method as default for the user and unset others.
+        """
+        PaymentMethod.query.filter(
+            PaymentMethod.user_id == self.user_id,
+            PaymentMethod.id != self.id
+        ).update({'is_default': False})
+
+        self.is_default = True
+        self.update()
+
     ##################################################
     # CLASS METHODS
     ##################################################
@@ -165,15 +177,3 @@ class PaymentMethod(db.Model):
         if q is None:
             q = cls.query
         return q.filter(cls.user_id == user_id)
-
-    def set_default_for_user(self):
-        """
-        Set a payment method as default for the user and unset others.
-        """
-        PaymentMethod.query.filter(
-            PaymentMethod.user_id == self.user_id,
-            PaymentMethod.id != self.id
-        ).update({'is_default': False})
-
-        self.is_default = True
-        self.update()

@@ -123,7 +123,7 @@ class TestPaymentMethodModel(TestCaseBase):
         payment_method.create()
         self.assertFalse(payment_method.is_default)
 
-        payment_method.set_as_default()
+        payment_method.set_default_for_user()
 
         updated_payment_method = PaymentMethod.query.get(payment_method.id)
         self.assertTrue(updated_payment_method.is_default)
@@ -136,7 +136,7 @@ class TestPaymentMethodModel(TestCaseBase):
         payment_method1.create()
         payment_method2.create()
 
-        payment_method1.set_as_default()
+        payment_method1.set_default_for_user()
 
         updated_method1 = PaymentMethod.find(payment_method1.id)
         updated_method2 = PaymentMethod.find(payment_method2.id)
@@ -149,7 +149,7 @@ class TestPaymentMethodModel(TestCaseBase):
         payment_method = CreditCardFactory(is_default=True)
         payment_method.create()
 
-        payment_method.set_as_default()
+        payment_method.set_default_for_user()
 
         payment_method.name = "Updated Name"
         payment_method.update()
