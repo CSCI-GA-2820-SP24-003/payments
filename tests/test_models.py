@@ -116,6 +116,47 @@ class TestPaymentMethodModel(TestCaseBase):
         with self.assertRaises(DataValidationError):
             payment_method.create()
 
+    def test_set_payment_method_as_default(self):
+        """It should set a payment method as the default"""
+        user_id = 1
+        payment_method = CreditCardFactory(user_id=user_id)
+        payment_method.create()
+        self.assertFalse(payment_method.is_default)
+
+        payment_method.set_default_for_user()
+
+        updated_payment_method = PaymentMethod.query.get(payment_method.id)
+        self.assertTrue(updated_payment_method.is_default)
+
+    def test_unset_other_payment_methods_when_one_is_set_as_default(self):
+        """It should unset other payment methods when one is set as default"""
+        user_id = 1
+        payment_method1 = CreditCardFactory(user_id=user_id, is_default=False)
+        payment_method2 = PayPalFactory(user_id=user_id, is_default=False)
+        payment_method1.create()
+        payment_method2.create()
+
+        payment_method1.set_default_for_user()
+
+        updated_method1 = PaymentMethod.find(payment_method1.id)
+        updated_method2 = PaymentMethod.find(payment_method2.id)
+
+        self.assertTrue(updated_method1.is_default)
+        self.assertFalse(updated_method2.is_default)
+
+    def test_default_status_persists_across_updates(self):
+        """It should maintain the default status across updates"""
+        payment_method = CreditCardFactory(is_default=True)
+        payment_method.create()
+
+        payment_method.set_default_for_user()
+
+        payment_method.name = "Updated Name"
+        payment_method.update()
+
+        updated_payment_method = PaymentMethod.find(payment_method.id)
+        self.assertTrue(updated_payment_method.is_default)
+
 
 class TestPayPalModel(TestCaseBase):
     """PayPal Model CRUD Tests"""

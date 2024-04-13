@@ -50,6 +50,7 @@ class PaymentMethod(db.Model):
     name = db.Column(db.String(63), nullable=False)
     user_id = db.Column(db.Integer, nullable=False)
     type = db.Column(db.Enum(PaymentMethodType), nullable=False)
+    is_default = db.Column(db.Boolean(), default=False, nullable=False)
 
     # https://docs.sqlalchemy.org/en/20/orm/inheritance.html
     #
@@ -110,6 +111,18 @@ class PaymentMethod(db.Model):
             db.session.rollback()
             logger.error("Error deleting PaymentMethod: %s", self)
             raise DataValidationError(e) from e
+
+    def set_default_for_user(self):
+        """
+        Set a payment method as default for the user and unset others.
+        """
+        PaymentMethod.query.filter(
+            PaymentMethod.user_id == self.user_id,
+            PaymentMethod.id != self.id
+        ).update({'is_default': False})
+
+        self.is_default = True
+        self.update()
 
     ##################################################
     # CLASS METHODS
