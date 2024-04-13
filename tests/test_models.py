@@ -123,7 +123,7 @@ class TestPaymentMethodModel(TestCaseBase):
         payment_method.create()
         self.assertFalse(payment_method.is_default)
 
-        PaymentMethod.set_default_for_user(user_id, payment_method.id)
+        payment_method.set_as_default()
 
         updated_payment_method = PaymentMethod.query.get(payment_method.id)
         self.assertTrue(updated_payment_method.is_default)
@@ -136,7 +136,7 @@ class TestPaymentMethodModel(TestCaseBase):
         payment_method1.create()
         payment_method2.create()
 
-        PaymentMethod.set_default_for_user(user_id, payment_method1.id)
+        payment_method1.set_as_default()
 
         updated_method1 = PaymentMethod.find(payment_method1.id)
         updated_method2 = PaymentMethod.find(payment_method2.id)
@@ -148,6 +148,8 @@ class TestPaymentMethodModel(TestCaseBase):
         """It should maintain the default status across updates"""
         payment_method = CreditCardFactory(is_default=True)
         payment_method.create()
+
+        payment_method.set_as_default()
 
         payment_method.name = "Updated Name"
         payment_method.update()

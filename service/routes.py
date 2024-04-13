@@ -189,18 +189,23 @@ def get_payment_method(payment_method_id):
 def set_default_payment_method(payment_method_id):
     """
     Set a payment method as default.
+
+    This endpoint will mark a given payment method as the default one
+    and unset the is_default flag for all other payment methods for the same user
     """
     app.logger.info(f"Setting payment method {payment_method_id} as default")
 
-    user_id = request.args.get("user_id")
-    payment_method = PaymentMethod.set_default_for_user(user_id, payment_method_id)
+    payment_method = PaymentMethod.find(payment_method_id)
+    if not payment_method:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"PaymentMethod with id '{payment_method_id}' was not found"
+        )
 
-    if payment_method:
-        app.logger.info(f"Payment method {payment_method_id} set as default")
-        return jsonify(payment_method.serialize()), status.HTTP_200_OK
+    payment_method.set_default_for_user()
 
-    app.logger.error(f"PaymentMethod with id '{payment_method_id}' was not found or could not be set as default.")
-    abort(status.HTTP_404_NOT_FOUND, f"PaymentMethod with id '{payment_method_id}' was not found.")
+    app.logger.info(f"Payment method {payment_method_id} set as default")
+    return jsonify(payment_method.serialize()), status.HTTP_200_OK
 
 
 ######################################################################

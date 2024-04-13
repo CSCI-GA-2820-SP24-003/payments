@@ -289,7 +289,7 @@ class TestPaymentsService(TestCase):
         updated_method = response.get_json()
         self.assertTrue(updated_method["is_default"])
 
-    def test_set_new_default_unsets_previous_default(self):
+    def test_set_new_default_unset_previous_default(self):
         """It should unset the previous default when a new default is set"""
         user_id = 123
         payment_method1 = CreditCardFactory(user_id=user_id)
