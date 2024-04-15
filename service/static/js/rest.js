@@ -232,6 +232,7 @@ function addSearchResult(payload, replace) {
   const resultsBody = document.getElementById("results-body");
   const editButtonId = `edit-result-${payload.id}`;
   const deleteButtonId = `delete-result-${payload.id}`;
+  const setDefaultButtonId = `set-default-button-${payload.id}`;
 
   const row = document.createElement("tr");
 
@@ -244,6 +245,7 @@ function addSearchResult(payload, replace) {
     <td>${payload.user_id}</td>
     <td class="actions">
       <button id="${editButtonId}">Edit</button>
+      <button id="${setDefaultButtonId}">Set default</button>
       <button id="${deleteButtonId}" class="delete">Delete</button>
     </td>`;
 
@@ -257,6 +259,29 @@ function addSearchResult(payload, replace) {
   document.getElementById(editButtonId).addEventListener("click", () => {
     openEditPaymentMethod(payload);
   });
+
+  // handle set default payment method
+  document
+    .getElementById(setDefaultButtonId)
+    .addEventListener("click", async () => {
+      const res = await fetch(`/payments/${payload.id}/set-default`, {
+        method: "PUT",
+      });
+      const data = await res.json();
+
+      if (data.error) {
+        return Notifications.show({
+          type: "error",
+          message:
+            "An error occurred when trying to set a default payment method",
+        });
+      }
+
+      Notifications.show({
+        type: "success",
+        message: `Successfully set payment method with id ${data.id} as default`,
+      });
+    });
 
   // handle delete payment method
   document
