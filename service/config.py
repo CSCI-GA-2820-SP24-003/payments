@@ -15,6 +15,9 @@ SQLALCHEMY_DATABASE_URI = DATABASE_URI
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 # SQLALCHEMY_POOL_SIZE = 2
 
+# See if an API Key has been set for security
+API_KEY = os.getenv("API_KEY")
+
 # Secret for session management
 SECRET_KEY = os.getenv("SECRET_KEY", "sup3r-s3cr3t")
 LOGGING_LEVEL = logging.INFO
