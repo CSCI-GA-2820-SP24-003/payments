@@ -114,3 +114,25 @@ def step_impl(context, name):
     result_id = context.driver.find_element(By.ID, element_id).text
     button_id = f"delete-result-{result_id}"
     context.driver.find_element(By.ID, button_id).click()
+
+
+@when('I press on default "{name}"')
+def step_impl(context, name):
+    element_id = name.lower().replace(" ", "-") + "-id"
+    result_id = context.driver.find_element(By.ID, element_id).text
+    button_id = f"set-default-{result_id}"
+    context.driver.find_element(By.ID, button_id).click()
+
+
+@then('I should see "{name}" as default')
+def step_impl(context, name):
+    element_id = name.lower().replace(" ", "-") + "-is-default"
+    is_default = context.driver.find_element(By.ID, element_id).text == "true"
+    assert is_default
+
+
+@then('I should see "{name}" as not default')
+def step_impl(context, name):
+    element_id = name.lower().replace(" ", "-") + "-is-default"
+    is_not_default = context.driver.find_element(By.ID, element_id).text == "false"
+    assert is_not_default
