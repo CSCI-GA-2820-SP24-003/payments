@@ -127,26 +127,6 @@ payment_args.add_argument(
 
 
 ######################################################################
-# Authorization Decorator
-######################################################################
-def token_required(func):
-    """Decorator to require a token for this endpoint"""
-
-    @wraps(func)
-    def decorated(*args, **kwargs):
-        token = None
-        if "X-Api-Key" in request.headers:
-            token = request.headers["X-Api-Key"]
-
-        if app.config.get("API_KEY") and app.config["API_KEY"] == token:
-            return func(*args, **kwargs)
-
-        return {"message": "Invalid or missing token"}, 401
-
-    return decorated
-
-
-######################################################################
 # Function to generate a random API key (good for testing)
 ######################################################################
 def generate_apikey():
@@ -212,16 +192,15 @@ class PaymentResource(Resource):
     @api.doc("update_payments", security="apikey")
     @api.response(404, "PaymentMethod not found")
     @api.response(400, "The posted PaymentMethod data was not valid")
-    # @api.expect(paymentmethod_model)
-    # @api.marshal_with(paymentmethod_model)
-    @token_required
     def put(self, payment_method_id):
         """
         Update a PaymentMethod
 
         This endpoint will update a PaymentMethod based the body that is posted
         """
-        app.logger.info("Request to update payment with id: %d", payment_method_id)
+        app.logger.info(
+            f"Request to update payment with id: {payment_method_id}",
+        )
         check_content_type("application/json")
 
         payment = PaymentMethod.find(payment_method_id)
@@ -243,20 +222,19 @@ class PaymentResource(Resource):
     ######################################################################
     @api.doc("delete_payments", security="apikey")
     @api.response(204, "PaymentMethod deleted")
-    @token_required
     def delete(self, payment_method_id):
         """
         Delete a Payment Method
 
         This endpoint will delete a PaymentMethod based the id specified in the path
         """
-        app.logger.info("Request to delete payment with id: %d", payment_method_id)
+        app.logger.info(f"Request to delete payment with id: {payment_method_id}")
 
         payment_method = PaymentMethod.find(payment_method_id)
         if payment_method:
             payment_method.delete()
 
-        app.logger.info("Payment with ID: %d delete complete.", payment_method_id)
+        app.logger.info(f"Payment with ID: {payment_method_id} delete complete.")
         return "", status.HTTP_204_NO_CONTENT
 
 
@@ -272,7 +250,6 @@ class PaymentCollection(Resource):
     ######################################################################
     @api.doc("list_payments")
     @api.expect(payment_args, validate=True)
-    # @api.marshal_list_with(paymentmethod_model)
     def get(self):
         """Returns all of the PaymentMethods"""
         app.logger.info("Request for payment method list")
@@ -299,9 +276,6 @@ class PaymentCollection(Resource):
     ######################################################################
     @api.doc("create_payments", security="apikey")
     @api.response(400, "The posted data was not valid")
-    # @api.expect(create_model)
-    # @api.marshal_with(paymentmethod_model, code=201)
-    @token_required
     def post(self):
         """
         Creates Payment Method
