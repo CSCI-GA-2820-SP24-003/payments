@@ -9,6 +9,7 @@ from wsgi import app
 from tests.factories import CreditCardFactory, PayPalFactory
 from service.common import status
 from service.models import db, PaymentMethod
+from service.routes import generate_apikey
 
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/postgres"
@@ -408,3 +409,6 @@ class TestPaymentsService(TestCase):
 
         resp2_updated = self.client.get(f"{BASE_URL}/{method2_id}")
         self.assertTrue(resp2_updated.get_json()["is_default"])
+
+    def test_generate_apikey(self):
+        self.assertEqual(len(generate_apikey()),16)

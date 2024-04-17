@@ -299,7 +299,7 @@ class PaymentCollection(Resource):
     ######################################################################
     @api.doc("create_payments", security="apikey")
     @api.response(400, "The posted data was not valid")
-    @api.expect(create_model)
+    # @api.expect(create_model)
     # @api.marshal_with(paymentmethod_model, code=201)
     @token_required
     def post(self):
