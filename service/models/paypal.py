@@ -54,6 +54,8 @@ class PayPal(PaymentMethod):
             self.type = convert_str_to_payment_method_type_enum(data["type"])
             self.user_id = data["user_id"]
             self.email = data["email"]
+        except AttributeError as error:
+            raise DataValidationError("Invalid attribute: " + error.args[0]) from error
         except KeyError as error:
             raise DataValidationError(
                 "Invalid PayPal: missing " + error.args[0]
