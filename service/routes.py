@@ -68,7 +68,7 @@ create_model = api.model(
     },
 )
 
-paymentmethod_model = api.inherit(
+payment_method_model = api.inherit(
     "PaymentMethodModel",
     create_model,
     {
@@ -77,7 +77,7 @@ paymentmethod_model = api.inherit(
         ),
     },
 )
-creditcard_model = api.inherit(
+credit_card_model = api.inherit(
     "CreditCardModel",
     create_model,
     {
