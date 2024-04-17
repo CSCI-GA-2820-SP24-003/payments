@@ -33,8 +33,6 @@ class TestPaymentsService(TestCase):
         app.config["DEBUG"] = False
         # Set up the test database
         app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URI
-        api_key = generate_apikey()
-        app.config["API_KEY"] = api_key
         app.logger.setLevel(logging.CRITICAL)
         app.app_context().push()
 
