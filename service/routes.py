@@ -22,9 +22,9 @@ and Delete Payments from the inventory of payments in the PaymentShop
 
 """
 from . import api
-from flask import jsonify, request, url_for, abort
+from flask import jsonify, request, abort
 from flask import current_app as app  # Import Flask application
-from flask_restx import Resource, fields, reqparse, inputs
+from flask_restx import Resource, fields, reqparse
 from functools import wraps
 import secrets
 from service.common import status  # HTTP Status Codes
@@ -75,7 +75,7 @@ paymentmethod_model = api.inherit(
         "id": fields.String(
             readOnly=True, description="The unique id assigned internally by service"
         ),
-    }
+    },
 )
 creditcard_model = api.inherit(
     "CreditCardModel",
@@ -117,7 +117,11 @@ payment_args.add_argument(
     "type", type=str, location="args", required=False, help="List Payments by type"
 )
 payment_args.add_argument(
-    "user_id", type=str, location="args", required=False, help="List Payments by user_id"
+    "user_id",
+    type=str,
+    location="args",
+    required=False,
+    help="List Payments by user_id",
 )
 
 
@@ -161,6 +165,7 @@ def get_health():
 ######################################################################
 #  R E S T   A P I   E N D P O I N T S
 ######################################################################
+
 
 ######################################################################
 #  PATH: /payments/{id}
@@ -287,7 +292,7 @@ class PaymentCollection(Resource):
         results = [payment_method.serialize() for payment_method in q.all()]
         app.logger.info("Returning %d payment methods", len(results))
         return results, status.HTTP_200_OK
-    
+
     ######################################################################
     #  CREATE A PAYMENT METHOD
     ######################################################################
@@ -357,6 +362,7 @@ class SetDefaultResource(Resource):
 
         app.logger.info(f"Payment method {payment_method_id} set as default")
         return payment_method.serialize(), status.HTTP_200_OK
+
 
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S

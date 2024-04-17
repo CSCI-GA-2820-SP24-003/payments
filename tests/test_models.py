@@ -453,6 +453,12 @@ class TestCreditCardModel(TestCaseBase):
 
     def test_convert_str_to_payment_method_type_enum(self):
         """It should Match the enum value to enum"""
-        self.assertEqual(convert_str_to_payment_method_type_enum(PaymentMethodType.UNKNOWN.value),PaymentMethodType.UNKNOWN)
-        self.assertEqual(convert_str_to_payment_method_type_enum(PaymentMethodType.UNKNOWN),PaymentMethodType.UNKNOWN)
+        self.assertEqual(
+            convert_str_to_payment_method_type_enum(PaymentMethodType.UNKNOWN.value),
+            PaymentMethodType.UNKNOWN,
+        )
+        self.assertEqual(
+            convert_str_to_payment_method_type_enum(PaymentMethodType.UNKNOWN),
+            PaymentMethodType.UNKNOWN,
+        )
         self.assertEqual(convert_str_to_payment_method_type_enum(123), None)

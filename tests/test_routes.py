@@ -10,6 +10,7 @@ from tests.factories import CreditCardFactory, PayPalFactory
 from service.common import status
 from service.models import db, PaymentMethod
 from service.routes import generate_apikey
+
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/postgres"
 )
@@ -159,15 +160,15 @@ class TestPaymentsService(TestCase):
             "type": "test",
             "email": "sample@email.com",
         }
-        resp = self.client.post(BASE_URL, json=data, content_type="application/json", headers=self.headers)
+        resp = self.client.post(
+            BASE_URL, json=data, content_type="application/json", headers=self.headers
+        )
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_payment_method_wrong_content_type(self):
         """It should respond with 415 when creating a payment method with anything but application/json"""
         resp = self.client.post(
-            BASE_URL, 
-            content_type="text/html",
-            headers=self.headers
+            BASE_URL, content_type="text/html", headers=self.headers
         )
         self.assertEqual(resp.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
@@ -186,7 +187,9 @@ class TestPaymentsService(TestCase):
         # create a payment method to update
         test_payment_method = CreditCardFactory()
         test_payment_method.create()
-        response = self.client.post(BASE_URL, json=test_payment_method.serialize(), headers=self.headers)
+        response = self.client.post(
+            BASE_URL, json=test_payment_method.serialize(), headers=self.headers
+        )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # update the payment method
@@ -218,7 +221,9 @@ class TestPaymentsService(TestCase):
         # create a payment method to update
         test_payment_method = CreditCardFactory()
         test_payment_method.create()
-        response = self.client.post(BASE_URL, json=test_payment_method.serialize(), headers=self.headers)
+        response = self.client.post(
+            BASE_URL, json=test_payment_method.serialize(), headers=self.headers
+        )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # update the payment method
@@ -346,7 +351,7 @@ class TestPaymentsService(TestCase):
 
         response = self.client.put(
             f"{BASE_URL}/{payment_method_id}/set-default",
-            json={'user_id': payment_method.user_id},
+            json={"user_id": payment_method.user_id},
             headers=self.headers,
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -358,7 +363,7 @@ class TestPaymentsService(TestCase):
         """It should set a payment method as the default"""
         response = self.client.put(
             f"{BASE_URL}/12345/set-default",
-            json={'user_id': 2},
+            json={"user_id": 2},
             headers=self.headers,
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
@@ -370,8 +375,8 @@ class TestPaymentsService(TestCase):
         payment_method2 = PayPalFactory(user_id=user_id)
 
         resp1 = self.client.post(
-            BASE_URL, 
-            json=payment_method1.serialize(), 
+            BASE_URL,
+            json=payment_method1.serialize(),
             content_type="application/json",
             headers=self.headers,
         )
@@ -379,8 +384,8 @@ class TestPaymentsService(TestCase):
         method1_id = resp1.get_json()["id"]
 
         resp2 = self.client.post(
-            BASE_URL, 
-            json=payment_method2.serialize(), 
+            BASE_URL,
+            json=payment_method2.serialize(),
             content_type="application/json",
             headers=self.headers,
         )
@@ -389,16 +394,16 @@ class TestPaymentsService(TestCase):
 
         response = self.client.put(
             f"{BASE_URL}/{method1_id}/set-default",
-            json={'user_id': user_id},
-            headers=self.headers
-            )
+            json={"user_id": user_id},
+            headers=self.headers,
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         response = self.client.put(
             f"{BASE_URL}/{method2_id}/set-default",
-            json={'user_id': user_id},
-            headers=self.headers
-            )
+            json={"user_id": user_id},
+            headers=self.headers,
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         resp1_updated = self.client.get(f"{BASE_URL}/{method1_id}")
