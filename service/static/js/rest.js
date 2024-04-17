@@ -228,21 +228,43 @@ function openEditPaymentMethod(payload) {
   });
 }
 
+function setDefaultPaymentMethod({ id, userId }) {
+  const resultsBody = document.getElementById("results-body");
+
+  if (resultsBody.children.length === 0) {
+    return;
+  }
+
+  for (const row of Array.from(resultsBody.children)) {
+    const currRowId = Number(row.firstChild.textContent);
+    const currRowUserId = Number(row.children[3].textContent);
+
+    if (currRowId === id && currRowUserId === userId) {
+      row.children[4].textContent = "true";
+      continue;
+    }
+
+    if (currRowUserId === userId) {
+      row.children[4].textContent = "false";
+    }
+  }
+}
+
 function addSearchResult(payload, replace) {
   const resultsBody = document.getElementById("results-body");
   const editButtonId = `edit-result-${payload.id}`;
   const deleteButtonId = `delete-result-${payload.id}`;
-  const setDefaultButtonId = `set-default-button-${payload.id}`;
+  const setDefaultButtonId = `set-default-${payload.id}`;
+  const paymentMethodName = payload.name.toLowerCase().replaceAll(" ", "-");
 
   const row = document.createElement("tr");
 
   row.id = `payment-method-${payload.id}`;
-  row.innerHTML = `<td id="${payload.name
-    .toLowerCase()
-    .replaceAll(" ", "-")}-id">${payload.id}</td>
+  row.innerHTML = `<td id="${paymentMethodName}-id">${payload.id}</td>
     <td>${payload.type}</td>
     <td>${payload.name}</td>
     <td>${payload.user_id}</td>
+    <td id="${paymentMethodName}-is-default">${payload.is_default}</td>
     <td class="actions">
       <button id="${editButtonId}">Edit</button>
       <button id="${setDefaultButtonId}">Set default</button>
@@ -277,6 +299,7 @@ function addSearchResult(payload, replace) {
         });
       }
 
+      setDefaultPaymentMethod({ id: data.id, userId: data.user_id });
       Notifications.show({
         type: "success",
         message: `Successfully set payment method with id ${data.id} as default`,

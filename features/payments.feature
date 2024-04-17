@@ -110,3 +110,18 @@ Scenario: Should delete payment method
     And I press on delete "do not use"
     Then I should see the "Success" notification
     And I should not see "do not use" in the results
+
+Scenario: Should set default payment method
+    When I visit the "Home Page"
+    And I set the "Search User ID" to "1" in query params
+    And I press the "Search Payment Methods" button
+    And I press on default "best method"
+    Then I should see the "Success" notification
+    And I should see "best method" as default
+    And I should see "abc" as not default
+    And I should see "efg" as not default
+    When I press on default "efg"
+    Then I should see the "Success" notification
+    And I should see "efg" as default
+    And I should see "best method" as not default
+    And I should see "abc" as not default
