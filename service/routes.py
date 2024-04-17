@@ -21,14 +21,14 @@ This service implements a REST API that allows you to Create, Read, Update
 and Delete Payments from the inventory of payments in the PaymentShop
 
 """
-from . import api
+from functools import wraps
+import secrets
 from flask import jsonify, request, abort
 from flask import current_app as app  # Import Flask application
 from flask_restx import Resource, fields, reqparse
-from functools import wraps
-import secrets
 from service.common import status  # HTTP Status Codes
 from service.models import PaymentMethod, PaymentMethodType, CreditCard, PayPal
+from . import api
 
 
 ######################################################################
