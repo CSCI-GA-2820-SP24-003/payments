@@ -44,6 +44,7 @@ class TestPaymentsService(TestCase):
     def setUp(self):
         """Runs before each test"""
         self.client = app.test_client()
+        self.headers = {}
         db.session.query(PaymentMethod).delete()  # clean up the last tests
         db.session.commit()
 
