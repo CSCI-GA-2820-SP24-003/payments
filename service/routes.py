@@ -120,6 +120,7 @@ payment_args.add_argument(
     "user_id", type=str, location="args", required=False, help="List Payments by user_id"
 )
 
+
 ######################################################################
 # Authorization Decorator
 ######################################################################
@@ -160,7 +161,6 @@ def get_health():
 ######################################################################
 #  R E S T   A P I   E N D P O I N T S
 ######################################################################
-
 
 ######################################################################
 #  PATH: /payments/{id}
@@ -254,6 +254,9 @@ class PaymentResource(Resource):
         return "", status.HTTP_204_NO_CONTENT
 
 
+######################################################################
+#  PATH: /payments
+######################################################################
 @api.route("/payments", strict_slashes=False)
 class PaymentCollection(Resource):
     """Handles all interactions with collections of PaymentMethods"""
@@ -323,9 +326,9 @@ class PaymentCollection(Resource):
         return message, status.HTTP_201_CREATED, {"Location": location_url}
 
 
-######################################################################
+######################################################
 # SET DEFAULT PAYMENT METHOD
-######################################################################
+######################################################
 @api.route("/payments/<payment_method_id>/set-default")
 @api.param("payment_method_id", "The PaymentMethod identifier")
 class SetDefaultResource(Resource):
@@ -358,8 +361,6 @@ class SetDefaultResource(Resource):
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
-
-
 def check_content_type(content_type):
     """Checks that the media type is correct"""
     if "Content-Type" not in request.headers:

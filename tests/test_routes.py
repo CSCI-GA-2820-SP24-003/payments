@@ -9,12 +9,11 @@ from wsgi import app
 from tests.factories import CreditCardFactory, PayPalFactory
 from service.common import status
 from service.models import db, PaymentMethod
-
+from service.routes import generate_apikey
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/postgres"
 )
 
-# BASE_URL = "/payments"
 BASE_URL = "/api/payments"
 
 ######################################################################
@@ -33,6 +32,8 @@ class TestPaymentsService(TestCase):
         app.config["DEBUG"] = False
         # Set up the test database
         app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URI
+        api_key = generate_apikey()
+        app.config["API_KEY"] = api_key
         app.logger.setLevel(logging.CRITICAL)
         app.app_context().push()
 
@@ -123,7 +124,6 @@ class TestPaymentsService(TestCase):
 
         # Check whether response matches the paypal method
         created_paypal = resp.get_json()
-        print(created_paypal)
         self.assertIsNotNone(created_paypal["id"])
         self.assertEqual(created_paypal["name"], paypal.name)
         self.assertEqual(created_paypal["type"], paypal.type.value)
@@ -136,11 +136,20 @@ class TestPaymentsService(TestCase):
         resp = self.client.get(location)
         new_created_paypal = resp.get_json()
         self.assertIsNotNone(new_created_paypal["id"])
-        print(new_created_paypal)
         self.assertEqual(new_created_paypal["name"], paypal.name)
         self.assertEqual(new_created_paypal["type"], paypal.type.value)
         self.assertEqual(new_created_paypal["user_id"], paypal.user_id)
         self.assertEqual(new_created_paypal["email"], paypal.email)
+
+    def test_create_payment_method_unauthorized(self):
+        """It should not create a new Payment Method if unauthorized"""
+        paypal = PayPalFactory()
+        resp = self.client.post(
+            BASE_URL,
+            json=paypal.serialize(),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_create_payment_method_with_no_type(self):
         """It should respond with 400 BAD REQUEST if type is wrong"""
@@ -193,6 +202,35 @@ class TestPaymentsService(TestCase):
         updated_payment = response.get_json()
         self.assertEqual(updated_payment["name"], "unknown")
 
+    def test_update_payment_method_not_exist(self):
+        """It should not Update a Payment Method that does not exist"""
+
+        # update the payment method
+        response = self.client.put(
+            f"{BASE_URL}/{1001}",
+            json={},
+            headers=self.headers,
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_update_payment_method_unauthorized(self):
+        """It should not update a Payment Method if unauthorized"""
+        # create a payment method to update
+        test_payment_method = CreditCardFactory()
+        test_payment_method.create()
+        response = self.client.post(BASE_URL, json=test_payment_method.serialize(), headers=self.headers)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # update the payment method
+        payment_method = response.get_json()
+        logging.debug(payment_method)
+        payment_method["name"] = "unknown"
+        response = self.client.put(
+            f"{BASE_URL}/{payment_method['id']}",
+            json=payment_method,
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
     def test_delete_payment_method(self):
         """It should Delete a Payment Method"""
         test_payment_method = CreditCardFactory()
@@ -206,6 +244,15 @@ class TestPaymentsService(TestCase):
         # make sure they are deleted
         response = self.client.get(f"{BASE_URL}/{test_payment_method.id}")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_payment_method_unauthorized(self):
+        """It should not Delete a Payment Method if unauthorized"""
+        test_payment_method = CreditCardFactory()
+        test_payment_method.create()
+        response = self.client.delete(
+            f"{BASE_URL}/{test_payment_method.id}",
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_list_payment_methods(self):
         """It should List all PaymentMethods"""
@@ -306,6 +353,15 @@ class TestPaymentsService(TestCase):
 
         updated_method = response.get_json()
         self.assertTrue(updated_method["is_default"])
+
+    def test_set_payment_method_as_default_no_exist(self):
+        """It should set a payment method as the default"""
+        response = self.client.put(
+            f"{BASE_URL}/12345/set-default",
+            json={'user_id': 2},
+            headers=self.headers,
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_set_new_default_unset_previous_default(self):
         """It should unset the previous default when a new default is set"""
