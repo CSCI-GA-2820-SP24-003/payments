@@ -75,15 +75,12 @@ def step_impl(context, element_name, value):
 @then('I should see the "{notification_type}" notification')
 def step_impl(context, notification_type):
     css_selector_name = f"div.notification.{notification_type.lower()}"
-    context.driver.implicitly_wait(3)
-    element = context.driver.find_element(By.CSS_SELECTOR, css_selector_name)
-    assert element
-    # found = WebDriverWait(context.driver, context.wait_seconds).until(
-    #     expected_conditions.presence_of_element_located(
-    #         (By.CSS_SELECTOR, css_selector_name)
-    #     )
-    # )
-    # assert found
+    found = WebDriverWait(context.driver, context.wait_seconds).until(
+        expected_conditions.presence_of_element_located(
+            (By.CSS_SELECTOR, css_selector_name)
+        )
+    )
+    assert found
 
 
 @when('I copy the "{copy_element_name}" and paste to "{paste_element_name}"')
