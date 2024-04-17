@@ -21,6 +21,7 @@ This service implements a REST API that allows you to Create, Read, Update
 and Delete Payments from the inventory of payments in the PaymentShop
 
 """
+# pylint: disable=redefined-builtin, cyclic-import
 from functools import wraps
 import secrets
 from flask import jsonify, request, abort
