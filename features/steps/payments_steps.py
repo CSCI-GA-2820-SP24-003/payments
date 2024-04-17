@@ -4,7 +4,6 @@ Payments Steps
 Steps file for payments.feature
 """
 
-import os
 import requests
 from behave import given
 
