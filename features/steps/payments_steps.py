@@ -11,6 +11,7 @@ HTTP_200_OK = 200
 HTTP_201_CREATED = 201
 HTTP_204_NO_CONTENT = 204
 
+
 @given('the following payment methods')
 def step_impl(context):
     """ Delete all payment methods and load new ones """

@@ -411,4 +411,5 @@ class TestPaymentsService(TestCase):
         self.assertTrue(resp2_updated.get_json()["is_default"])
 
     def test_generate_apikey(self):
-        self.assertEqual(len(generate_apikey()),16)
+        """It should Generate a string of length 16"""
+        self.assertEqual(len(generate_apikey()), 16)
