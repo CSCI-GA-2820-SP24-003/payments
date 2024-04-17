@@ -9,7 +9,6 @@ from wsgi import app
 from tests.factories import CreditCardFactory, PayPalFactory
 from service.common import status
 from service.models import db, PaymentMethod
-from service.routes import generate_apikey
 
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/postgres"
