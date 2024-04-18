@@ -28,7 +28,7 @@ function getFieldsForType(type) {
     : CREDIT_CARD_FIELDS;
 }
 
-const NOTIFICATION_CLOSE_DELAY = 20000; // 10 seconds for notifications to close
+const NOTIFICATION_CLOSE_DELAY = 10000; // 10 seconds for notifications to close
 
 class Notifications {
   static counter = 0;
