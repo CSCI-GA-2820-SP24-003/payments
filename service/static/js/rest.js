@@ -1,4 +1,5 @@
-const BASE_URL="/api/payments";
+const BASE_URL = "/api/payments";
+
 const PAYMENT_METHOD_TYPE = {
   PAYPAL: "PAYPAL",
   CREDIT_CARD: "CREDIT_CARD",
@@ -164,7 +165,7 @@ const modal = setupModal();
 
 async function onSubmitNewPayment(formBody) {
   const res = await fetch(BASE_URL, {
-    headers: { "Content-Type": "application/json"} ,
+    headers: { "Content-Type": "application/json" },
     method: "POST",
     body: JSON.stringify(formBody),
   });
@@ -201,7 +202,7 @@ function removeSearchResult(elementId) {
 
 async function onSubmitEditPayment(payload) {
   const { id, ...formBody } = payload;
-  const res = await fetch(BASE_URL+`/${id}`, {
+  const res = await fetch(`${BASE_URL}/${id}`, {
     headers: { "Content-Type": "application/json" },
     method: "PUT",
     body: JSON.stringify(formBody),
@@ -287,8 +288,8 @@ function addSearchResult(payload, replace) {
   document
     .getElementById(setDefaultButtonId)
     .addEventListener("click", async () => {
-      const res = await fetch(BASE_URL+`/${payload.id}/set-default`, {
-        method: "PUT", 
+      const res = await fetch(`${BASE_URL}/${payload.id}/set-default`, {
+        method: "PUT",
       });
       const data = await res.json();
 
@@ -312,7 +313,7 @@ function addSearchResult(payload, replace) {
     .getElementById(deleteButtonId)
     .addEventListener("click", async () => {
       try {
-        await fetch(BASE_URL+`/${payload.id}`, { method: "DELETE"});
+        await fetch(`${BASE_URL}/${payload.id}`, { method: "DELETE" });
         removeSearchResult(row.id);
         Notifications.show({
           type: "success",
@@ -354,7 +355,7 @@ document
 
     const searchString = searchParams.toString();
     const res = await fetch(
-      BASE_URL+`${searchString ? "?" + searchString : ""}`
+      `${BASE_URL}${searchString ? "?" + searchString : ""}`
     );
     const data = await res.json();
 
@@ -373,7 +374,7 @@ document
       "retrieve-payment-method-id"
     ).value;
 
-    const res = await fetch(BASE_URL+`/${paymentMethodId}`);
+    const res = await fetch(`${BASE_URL}/${paymentMethodId}`);
     const data = await res.json();
 
     if (data.error) {

@@ -23,7 +23,6 @@ def step_impl(context):
     assert context.resp.status_code == HTTP_200_OK
     for payment_method in context.resp.json():
         context.resp = requests.delete(f"{rest_endpoint}/{payment_method['id']}")
-        print(context.resp.status_code)
         assert context.resp.status_code == HTTP_204_NO_CONTENT
 
     # load the database with new pets
@@ -49,5 +48,4 @@ def step_impl(context):
         context.resp = requests.post(rest_endpoint, json=payload)
         if context.resp.status_code == 400:
             print(context.resp.text)
-        print(context.resp.status_code)
         assert context.resp.status_code == HTTP_201_CREATED
