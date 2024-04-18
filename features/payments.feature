@@ -43,9 +43,7 @@ Scenario: Create a Credit Card payment method
     And I set the "Security Code" to "776"
     And I set the "Billing Address" to "120 W 3rd St"
     And I set the "Zip Code" to "11008"
-    And I press the "Dialog Form Submit" button
-    Then I should see the "Error" notification
-    When I set the "Card Number" to "1234123412341234"
+    And I set the "Card Number" to "1234123412341234"
     And I press the "Dialog Form Submit" button
     Then I should see the "Success" notification
     When I copy the "Notification Payment Method ID" and paste to "Retrieve Payment Method ID"

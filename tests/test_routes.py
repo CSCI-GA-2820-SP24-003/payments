@@ -9,12 +9,13 @@ from wsgi import app
 from tests.factories import CreditCardFactory, PayPalFactory
 from service.common import status
 from service.models import db, PaymentMethod
+from service.routes import generate_apikey
 
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/postgres"
 )
 
-BASE_URL = "/payments"
+BASE_URL = "/api/payments"
 
 ######################################################################
 #  T E S T   C A S E S
@@ -43,6 +44,7 @@ class TestPaymentsService(TestCase):
     def setUp(self):
         """Runs before each test"""
         self.client = app.test_client()
+        self.headers = {}
         db.session.query(PaymentMethod).delete()  # clean up the last tests
         db.session.commit()
 
@@ -69,6 +71,7 @@ class TestPaymentsService(TestCase):
             BASE_URL,
             json=credit_card.serialize(),
             content_type="application/json",
+            headers=self.headers,
         )
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
 
@@ -114,6 +117,7 @@ class TestPaymentsService(TestCase):
             BASE_URL,
             json=paypal.serialize(),
             content_type="application/json",
+            headers=self.headers,
         )
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
 
@@ -144,17 +148,21 @@ class TestPaymentsService(TestCase):
             "type": "test",
             "email": "sample@email.com",
         }
-        resp = self.client.post(BASE_URL, json=data, content_type="application/json")
+        resp = self.client.post(
+            BASE_URL, json=data, content_type="application/json", headers=self.headers
+        )
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_payment_method_wrong_content_type(self):
         """It should respond with 415 when creating a payment method with anything but application/json"""
-        resp = self.client.post(BASE_URL, content_type="text/html")
+        resp = self.client.post(
+            BASE_URL, content_type="text/html", headers=self.headers
+        )
         self.assertEqual(resp.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
     def test_create_payment_method_no_content_type(self):
         """It should respond with 415 when creating a payment method with no content type"""
-        resp = self.client.post(BASE_URL, content_type=None)
+        resp = self.client.post(BASE_URL, headers=self.headers, content_type=None)
         self.assertEqual(resp.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
     def test_unsupported_method(self):
@@ -166,7 +174,10 @@ class TestPaymentsService(TestCase):
         """It should Update an existing Payment Method"""
         # create a payment method to update
         test_payment_method = CreditCardFactory()
-        response = self.client.post(BASE_URL, json=test_payment_method.serialize())
+        test_payment_method.create()
+        response = self.client.post(
+            BASE_URL, json=test_payment_method.serialize(), headers=self.headers
+        )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # update the payment method
@@ -174,17 +185,33 @@ class TestPaymentsService(TestCase):
         logging.debug(payment_method)
         payment_method["name"] = "unknown"
         response = self.client.put(
-            f"{BASE_URL}/{payment_method['id']}", json=payment_method
+            f"{BASE_URL}/{payment_method['id']}",
+            json=payment_method,
+            headers=self.headers,
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         updated_payment = response.get_json()
         self.assertEqual(updated_payment["name"], "unknown")
 
+    def test_update_payment_method_not_exist(self):
+        """It should not Update a Payment Method that does not exist"""
+
+        # update the payment method
+        response = self.client.put(
+            f"{BASE_URL}/{1001}",
+            json={},
+            headers=self.headers,
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
     def test_delete_payment_method(self):
         """It should Delete a Payment Method"""
         test_payment_method = CreditCardFactory()
         test_payment_method.create()
-        response = self.client.delete(f"{BASE_URL}/{test_payment_method.id}")
+        response = self.client.delete(
+            f"{BASE_URL}/{test_payment_method.id}",
+            headers=self.headers,
+        )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(len(response.data), 0)
         # make sure they are deleted
@@ -273,7 +300,8 @@ class TestPaymentsService(TestCase):
         response = self.client.post(
             BASE_URL,
             json=payment_method.serialize(),
-            content_type="application/json"
+            content_type="application/json",
+            headers=self.headers,
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
@@ -282,12 +310,22 @@ class TestPaymentsService(TestCase):
 
         response = self.client.put(
             f"{BASE_URL}/{payment_method_id}/set-default",
-            json={'user_id': payment_method.user_id}
+            json={"user_id": payment_method.user_id},
+            headers=self.headers,
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         updated_method = response.get_json()
         self.assertTrue(updated_method["is_default"])
+
+    def test_set_payment_method_as_default_no_exist(self):
+        """It should set a payment method as the default"""
+        response = self.client.put(
+            f"{BASE_URL}/12345/set-default",
+            json={"user_id": 2},
+            headers=self.headers,
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_set_new_default_unset_previous_default(self):
         """It should unset the previous default when a new default is set"""
@@ -295,24 +333,36 @@ class TestPaymentsService(TestCase):
         payment_method1 = CreditCardFactory(user_id=user_id)
         payment_method2 = PayPalFactory(user_id=user_id)
 
-        resp1 = self.client.post(BASE_URL, json=payment_method1.serialize(), content_type="application/json")
+        resp1 = self.client.post(
+            BASE_URL,
+            json=payment_method1.serialize(),
+            content_type="application/json",
+            headers=self.headers,
+        )
         self.assertEqual(resp1.status_code, status.HTTP_201_CREATED)
         method1_id = resp1.get_json()["id"]
 
-        resp2 = self.client.post(BASE_URL, json=payment_method2.serialize(), content_type="application/json")
+        resp2 = self.client.post(
+            BASE_URL,
+            json=payment_method2.serialize(),
+            content_type="application/json",
+            headers=self.headers,
+        )
         self.assertEqual(resp2.status_code, status.HTTP_201_CREATED)
         method2_id = resp2.get_json()["id"]
 
         response = self.client.put(
             f"{BASE_URL}/{method1_id}/set-default",
-            json={'user_id': user_id}
-            )
+            json={"user_id": user_id},
+            headers=self.headers,
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         response = self.client.put(
             f"{BASE_URL}/{method2_id}/set-default",
-            json={'user_id': user_id}
-            )
+            json={"user_id": user_id},
+            headers=self.headers,
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         resp1_updated = self.client.get(f"{BASE_URL}/{method1_id}")
@@ -320,3 +370,7 @@ class TestPaymentsService(TestCase):
 
         resp2_updated = self.client.get(f"{BASE_URL}/{method2_id}")
         self.assertTrue(resp2_updated.get_json()["is_default"])
+
+    def test_generate_apikey(self):
+        """It should Generate a string of length 32"""
+        self.assertEqual(len(generate_apikey()), 32)

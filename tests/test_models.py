@@ -14,6 +14,8 @@ from service.models import (
     DataValidationError,
     db,
 )
+from service.models.payment_method import convert_str_to_payment_method_type_enum
+
 from tests.factories import (
     CreditCardFactory,
     PayPalFactory,
@@ -448,3 +450,15 @@ class TestCreditCardModel(TestCaseBase):
         # delete the payment and make sure it isn't in the database
         payment.delete()
         self.assertEqual(len(CreditCard.all()), 0)
+
+    def test_convert_str_to_payment_method_type_enum(self):
+        """It should Match the enum value to enum"""
+        self.assertEqual(
+            convert_str_to_payment_method_type_enum(PaymentMethodType.UNKNOWN.value),
+            PaymentMethodType.UNKNOWN,
+        )
+        self.assertEqual(
+            convert_str_to_payment_method_type_enum(PaymentMethodType.UNKNOWN),
+            PaymentMethodType.UNKNOWN,
+        )
+        self.assertEqual(convert_str_to_payment_method_type_enum(123), None)
