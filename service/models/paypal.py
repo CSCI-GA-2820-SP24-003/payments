@@ -33,12 +33,13 @@ class PayPal(PaymentMethod):
 
     def serialize(self):
         """Serializes a PayPal into a dictionary"""
-        return {
+        return {  # pylint: disable=duplicate-code
             "id": self.id,
             "name": self.name,
             "type": self.type.value,
             "user_id": self.user_id,
             "email": self.email,
+            "is_default": self.is_default,
         }
 
     def deserialize(self, data):

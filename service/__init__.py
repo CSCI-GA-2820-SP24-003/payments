@@ -20,8 +20,12 @@ and SQL database
 """
 import sys
 from flask import Flask
+from flask_restx import Api
 from service import config
 from service.common import log_handlers
+
+# Will be initialize when app is created
+api = None  # pylint: disable=invalid-name
 
 
 ############################################################
@@ -38,6 +42,18 @@ def create_app():
     from service.models import db
 
     db.init_app(app)
+    global api
+    api = Api(
+        app,
+        version="1.0.0",
+        title="Payments REST API Service",
+        description="This is a sample Payments server.",
+        default="payments",
+        default_label="Payment operations",
+        doc="/apidocs",  # default also could use doc='/apidocs/'
+        authorizations={},
+        prefix="/api",
+    )
 
     with app.app_context():
         # Dependencies require we import the routes AFTER the Flask app is created
@@ -58,7 +74,6 @@ def create_app():
         app.logger.info(70 * "*")
         app.logger.info("  S E R V I C E   R U N N I N G  ".center(70, "*"))
         app.logger.info(70 * "*")
-
         app.logger.info("Service initialized!")
 
         return app

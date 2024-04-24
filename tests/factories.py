@@ -11,19 +11,20 @@ from service.models import PaymentMethod, CreditCard, PayPal
 class PaymentMethodFactory(Factory):
     """Creates fake PaymentMethod"""
 
-    class Meta:
+    class Meta:  # pylint: disable=too-few-public-methods
         """Persistent class"""
 
         model = PaymentMethod
 
     name = Faker("name")
     user_id = FuzzyInteger(0, 1000)
+    is_default = False
 
 
 class CreditCardFactory(PaymentMethodFactory):
     """Creates fake CreditCard"""
 
-    class Meta:
+    class Meta:  # pylint: disable=too-few-public-methods
         """Persistent class"""
 
         model = CreditCard
@@ -41,7 +42,7 @@ class CreditCardFactory(PaymentMethodFactory):
 class PayPalFactory(PaymentMethodFactory):
     """Creates fake PayPal"""
 
-    class Meta:
+    class Meta:  # pylint: disable=too-few-public-methods
         """Persistent class"""
 
         model = PayPal

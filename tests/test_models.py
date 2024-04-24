@@ -14,6 +14,8 @@ from service.models import (
     DataValidationError,
     db,
 )
+from service.models.payment_method import convert_str_to_payment_method_type_enum
+
 from tests.factories import (
     CreditCardFactory,
     PayPalFactory,
@@ -91,11 +93,71 @@ class TestPaymentMethodModel(TestCaseBase):
         found_paypal = PaymentMethod.find_by_name(paypal.name)
         self.assertEqual(paypal, found_paypal[0])
 
+    def test_find_payment_method_by_type(self):
+        """It should find PaymentMethod by type"""
+        paypal = PayPalFactory()
+        paypal.create()
+        found_paypal = PaymentMethod.find_by_type(PaymentMethodType.PAYPAL)
+        self.assertEqual(paypal, found_paypal[0])
+        found_creditcard = PaymentMethod.find_by_type(PaymentMethodType.CREDIT_CARD)
+        self.assertEqual(len(found_creditcard.all()), 0)
+
+    def test_find_payment_method_by_user_id(self):
+        """It should find PaymentMethod by type"""
+        paypal = PayPalFactory()
+        uid = paypal.user_id
+        paypal.create()
+        found_uid = PaymentMethod.find_by_user_id(uid)
+        self.assertEqual(paypal, found_uid[0])
+        found_alt_uid = PaymentMethod.find_by_user_id(uid + 1)
+        self.assertEqual(len(found_alt_uid.all()), 0)
+
     def test_create_invalid_payment_method(self):
         """It should not create a PaymentMethod with invalid data"""
         payment_method = PaymentMethod(name="")
         with self.assertRaises(DataValidationError):
             payment_method.create()
+
+    def test_set_payment_method_as_default(self):
+        """It should set a payment method as the default"""
+        user_id = 1
+        payment_method = CreditCardFactory(user_id=user_id)
+        payment_method.create()
+        self.assertFalse(payment_method.is_default)
+
+        payment_method.set_default_for_user()
+
+        updated_payment_method = PaymentMethod.query.get(payment_method.id)
+        self.assertTrue(updated_payment_method.is_default)
+
+    def test_unset_other_payment_methods_when_one_is_set_as_default(self):
+        """It should unset other payment methods when one is set as default"""
+        user_id = 1
+        payment_method1 = CreditCardFactory(user_id=user_id, is_default=False)
+        payment_method2 = PayPalFactory(user_id=user_id, is_default=False)
+        payment_method1.create()
+        payment_method2.create()
+
+        payment_method1.set_default_for_user()
+
+        updated_method1 = PaymentMethod.find(payment_method1.id)
+        updated_method2 = PaymentMethod.find(payment_method2.id)
+
+        self.assertTrue(updated_method1.is_default)
+        self.assertFalse(updated_method2.is_default)
+
+    def test_default_status_persists_across_updates(self):
+        """It should maintain the default status across updates"""
+        payment_method = CreditCardFactory(is_default=True)
+        payment_method.create()
+
+        payment_method.set_default_for_user()
+
+        payment_method.name = "Updated Name"
+        payment_method.update()
+
+        updated_payment_method = PaymentMethod.find(payment_method.id)
+        self.assertTrue(updated_payment_method.is_default)
 
 
 class TestPayPalModel(TestCaseBase):
@@ -388,3 +450,15 @@ class TestCreditCardModel(TestCaseBase):
         # delete the payment and make sure it isn't in the database
         payment.delete()
         self.assertEqual(len(CreditCard.all()), 0)
+
+    def test_convert_str_to_payment_method_type_enum(self):
+        """It should Match the enum value to enum"""
+        self.assertEqual(
+            convert_str_to_payment_method_type_enum(PaymentMethodType.UNKNOWN.value),
+            PaymentMethodType.UNKNOWN,
+        )
+        self.assertEqual(
+            convert_str_to_payment_method_type_enum(PaymentMethodType.UNKNOWN),
+            PaymentMethodType.UNKNOWN,
+        )
+        self.assertEqual(convert_str_to_payment_method_type_enum(123), None)

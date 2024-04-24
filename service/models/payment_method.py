@@ -50,6 +50,7 @@ class PaymentMethod(db.Model):
     name = db.Column(db.String(63), nullable=False)
     user_id = db.Column(db.Integer, nullable=False)
     type = db.Column(db.Enum(PaymentMethodType), nullable=False)
+    is_default = db.Column(db.Boolean(), default=False, nullable=False)
 
     # https://docs.sqlalchemy.org/en/20/orm/inheritance.html
     #
@@ -111,6 +112,18 @@ class PaymentMethod(db.Model):
             logger.error("Error deleting PaymentMethod: %s", self)
             raise DataValidationError(e) from e
 
+    def set_default_for_user(self):
+        """
+        Set a payment method as default for the user and unset others.
+        """
+        PaymentMethod.query.filter(
+            PaymentMethod.user_id == self.user_id,
+            PaymentMethod.id != self.id
+        ).update({'is_default': False})
+
+        self.is_default = True
+        self.update()
+
     ##################################################
     # CLASS METHODS
     ##################################################
@@ -130,11 +143,37 @@ class PaymentMethod(db.Model):
         return cls.query.session.get(cls, by_id)
 
     @classmethod
-    def find_by_name(cls, name):
+    def find_by_name(cls, name, q=None):
         """Returns all PaymentMethods with the given name
 
         Args:
             name (string): the name of the PaymentMethods you want to match
         """
         logger.info("Processing name query for %s ...", name)
-        return cls.query.filter(cls.name == name)
+        if q is None:
+            q = cls.query
+        return q.filter(cls.name == name)
+
+    @classmethod
+    def find_by_type(cls, payment_type, q=None):
+        """Returns all PaymentMethods with the given type (Paypal, CreditCard)
+
+        Args:
+            type (string): the type of the PaymentMethods you want to match
+        """
+        logger.info("Processing payment type query for %s ...", payment_type)
+        if q is None:
+            q = cls.query
+        return q.filter(cls.type == payment_type)
+
+    @classmethod
+    def find_by_user_id(cls, user_id, q=None):
+        """Returns all PaymentMethods with the given user_id
+
+        Args:
+            user_id (int): the user_id of the PaymentMethods you want to match
+        """
+        logger.info("Processing user_id query for %s ...", user_id)
+        if q is None:
+            q = cls.query
+        return q.filter(cls.user_id == user_id)

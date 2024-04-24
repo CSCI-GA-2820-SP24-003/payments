@@ -1,7 +1,9 @@
-# NYU DevOps Project Template
+# Payments Service
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python](https://img.shields.io/badge/Language-Python-blue.svg)](https://python.org/)
+[![Build Status](https://github.com/CSCI-GA-2820-SP24-003/payments/actions/workflows/ci.yml/badge.svg)](https://github.com/CSCI-GA-2820-SP24-003/payments/actions)
+[![codecov](https://codecov.io/gh/CSCI-GA-2820-SP24-003/payments/graph/badge.svg?token=YWXKXD4L0M)](https://codecov.io/gh/CSCI-GA-2820-SP24-003/payments)
 
 This is a skeleton you can use to start your projects
 
@@ -9,22 +11,66 @@ This is a skeleton you can use to start your projects
 
 This project template contains starter code for your class project. The `/service` folder contains your `models.py` file for your model and a `routes.py` file for your service. The `/tests` folder has test case starter code for testing the model and the service separately. All you need to do is add your functionality. You can use the [lab-flask-tdd](https://github.com/nyu-devops/lab-flask-tdd) for code examples to copy from.
 
-## Automatic Setup
+## Dev Environment Setup
 
-The best way to use this repo is to start your own repo using it as a git template. To do this just press the green **Use this template** button in GitHub and this will become the source for your repository.
+<details>
+  <summary>Using Visual Studio Code</summary>
+  
+  ### Requirements
+  1. Visual Studio Code
+  2. Docker 
+  3. Install the Dev Containers extension on VS Code
 
-## Manual Setup
+  ### Install instructions
+1. Git clone this repo to your machine
+2. Start VS Code, run the `Dev Containers: Open Folder in Container...` command from the Command Palette (`F1`)
+3. Try `pytest` in the terminal to run tests make sure the environment has been installed correctly.
+</details>
 
-You can also clone this repository and then copy and paste the starter code into your project repo folder on your local computer. Be careful not to copy over your own `README.md` file so be selective in what you copy.
+<details>
+  <summary>Common issues</summary>
 
-There are 4 hidden files that you will need to copy manually if you use the Mac Finder or Windows Explorer to copy files from this folder into your repo folder.
+1. Database cannot connect / authentication is wrong.
+   - Check that the `DATABASE_URI` being used in the repository matches up and the postgres container is running in docker. You may need to recreate the database.
+2. Can't start up the dev environment on VS Code.
+   - You may need to delete instances of the containers which may have conflicting names with your existing configuration. Alternatively you can also change the config file.
+</details>
 
-These should be copied using a bash shell as follows:
+## Local Deployment
+
+To launch deployment, we need to have a docker image in the local registry. Currently, the deployment build uses payments:3.0.
 
 ```bash
-    cp .gitignore  ../<your_repo_folder>/
-    cp .flaskenv ../<your_repo_folder>/
-    cp .gitattributes ../<your_repo_folder>/
+# build image for local registry if not existing
+docker build -t payments:3.0 .
+docker tag payments:3.0 cluster-registry:32000/payments:3.0
+docker push cluster-registry:32000/payments:3.0
+
+
+make cluster 
+kubectl apply -f k8s/  # launch app
+```
+The database may take up to a minute to be ready to listen to requests, which may cause some restarts in the app pod while initializing.
+
+
+Commands to tear down deployment:
+```bash
+kubectl delete -f k8s/
+make cluster-rm
+```
+
+## App Endpoints
+
+```text
+/index              - Root URL
+/payments   
+                    - GET : List all payment methods for a user
+/payments   
+                    - POST: Create a payment method
+/payments/:id
+                    - GET: Provide detailed information about an existing payment method
+                    - PUT: Update a given payment method
+                    - DELETE: Delete a payment method
 ```
 
 ## Contents
