@@ -77,7 +77,6 @@ create_model = api.model(
         "email": fields.String(required=False),
     },
 )
-wild_str = fields.Wildcard(fields.String)
 payment_method_model = api.inherit(
     "PaymentMethodModel",
     create_model,
