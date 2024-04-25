@@ -74,7 +74,7 @@ create_model = api.model(
         "billing_address": fields.String(required=False, description="The billing address of the credit card"),
         "zip_code": fields.String(required=False, description="The zip code used along with the address for the credit card"),
         # paypal fields
-        "email": fields.String(required=False, description="The email address the user wish to recieve information for the paypal"),
+        "email": fields.String(required=False, description="The email address the user wish to receive info for the paypal"),
     },
 )
 payment_method_model = api.inherit(
