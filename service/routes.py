@@ -65,16 +65,16 @@ create_model = api.model(
             required=True, description="The user_id of the relevant user"
         ),
         # credit card fields
-        "first_name": fields.String(required=False),
-        "last_name": fields.String(required=False),
-        "card_number": fields.String(required=False),
-        "expiry_month": fields.Integer(required=False),
-        "expiry_year": fields.Integer(required=False),
-        "security_code": fields.String(required=False),
-        "billing_address": fields.String(required=False),
-        "zip_code": fields.String(required=False),
+        "first_name": fields.String(required=False,description= "The first name on the card"),
+        "last_name": fields.String(required=False,description= "The last name on the card"),
+        "card_number": fields.String(required=False,description= "The card number on the card"),
+        "expiry_month": fields.Integer(required=False,description= "The expected expiration month of the card"),
+        "expiry_year": fields.Integer(required=False,description= "The expected expiration year of the card"),
+        "security_code": fields.String(required=False,description= "The security code on the card"),
+        "billing_address": fields.String(required=False,description= "The billing address of this card"),
+        "zip_code": fields.String(required=False,description= "The zip code used along with the address"),
         # paypal fields
-        "email": fields.String(required=False),
+        "email": fields.String(required=False,description= "The email which the user would like to recieve information"),
     },
 )
 payment_method_model = api.inherit(
