@@ -1,43 +1,42 @@
 # These are custom tasks that are not on Tekton Hub
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
-  name: pylint
-  labels:
-    app.kubernetes.io/version: "0.4"
   annotations:
     tekton.dev/categories: Code Quality
-    tekton.dev/pipelines.minVersion: "0.17.0"
-    tekton.dev/tags: python, pylint, poetry
-    tekton.dev/displayName: "pylint"
-    tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
+    tekton.dev/displayName: pylint
+    tekton.dev/pipelines.minVersion: 0.17.0
+    tekton.dev/platforms: 'linux/amd64,linux/s390x,linux/ppc64le'
+    tekton.dev/tags: 'python, pylint, poetry'
+  name: pylint
+  labels:
+    app.kubernetes.io/version: '0.4'
 spec:
-  workspaces:
-    - name: source
-      description: The workspace with the source code.
-  description: >-
-    Use to run pylint on the provided input source. If Poetry is being used
-    it will detect the poetry.lock file and install via requirements export.
+  description: Use to run pylint on the provided input source. If Poetry is being used it will detect the poetry.lock file and install via requirements export.
   params:
-    - name: image
+    - default: 'docker.io/python:3.11-slim'
       description: The container image with pylint
-      default: docker.io/python:3.11-slim  
-    - name: path
-      description: The path to the module which should be analyzed by pylint
-      default: "."
+      name: image
       type: string
-    - name: args
+    - default: .
+      description: The path to the module which should be analyzed by pylint
+      name: path
+      type: string
+    - default: []
       description: The arguments to pass to the pylint CLI.
+      name: args
       type: array
-      default: []
-    - name: requirements_file
+    - default: requirements.txt
       description: The name of the requirements file inside the source location
-      default: "requirements.txt"
+      name: requirements_file
+      type: string
   steps:
-    - name: pylint
+    - args:
+        - $(params.args)
+      computeResources: {}
       image: $(params.image)
-      workingDir: $(workspaces.source.path)
+      name: pylint
       script: |
         #!/bin/bash
         set -e
@@ -58,55 +57,54 @@ spec:
 
         echo "***** Running Linting *****"
         pylint $@ "$(params.path)"
-      args:
-        - "$(params.args)"
+      workingDir: $(workspaces.source.path)
+  workspaces:
+    - description: The workspace with the source code.
+      name: source
+
 
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
-  name: pytest-env
-  labels:
-    app.kubernetes.io/version: "0.1"
   annotations:
     tekton.dev/categories: Testing
-    tekton.dev/pipelines.minVersion: "0.17.0"
-    tekton.dev/tags: python, pytest
-    tekton.dev/displayName: "pytest tests"
-    tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
+    tekton.dev/displayName: pytest tests
+    tekton.dev/pipelines.minVersion: 0.17.0
+    tekton.dev/platforms: 'linux/amd64,linux/s390x,linux/ppc64le'
+    tekton.dev/tags: 'python, pytest'
+  name: pytest-env
+  labels:
+    app.kubernetes.io/version: '0.1'
 spec:
-  workspaces:
-    - name: source
-  description: >-
-    This task can be used to perform unit tests with pytest.
-    It supports both requirements.txt and poetry.lock files.
-
-    It also has the ability to create an environment variable
-    that is sourced from a Secret. This allows you to define
-    credentials that can be used to connect to a test database.
+  description: |-
+    This task can be used to perform unit tests with pytest. It supports both requirements.txt and poetry.lock files.
+    It also has the ability to create an environment variable that is sourced from a Secret. This allows you to define credentials that can be used to connect to a test database.
   params:
-    - name: PYTEST_ARGS
+    - default: []
       description: The arguments to pass to the pytest CLI.
+      name: PYTEST_ARGS
       type: array
-      default: []
-    - name: SECRET_NAME
+    - default: postgres-creds
       description: The name of the secret containing a database_uri key
+      name: SECRET_NAME
       type: string
-      default: "postgres-creds"
-    - name: SECRET_KEY
+    - default: database_uri
       description: The name of the key that contains the database uri
+      name: SECRET_KEY
       type: string
-      default: "database_uri"
   steps:
-    - name: pytest
-      image: docker.io/python:3.11-slim
-      workingDir: $(workspaces.source.path)
+    - args:
+        - $(params.PYTEST_ARGS)
+      computeResources: {}
       env:
-       - name: DATABASE_URI
-         valueFrom:
-           secretKeyRef:
-             name: $(params.SECRET_NAME)
-             key: $(params.SECRET_KEY)
+        - name: DATABASE_URI
+          valueFrom:
+            secretKeyRef:
+              key: $(params.SECRET_KEY)
+              name: $(params.SECRET_NAME)
+      image: 'docker.io/python:3.11-slim'
+      name: pytest
       script: |
         #!/bin/bash
         set -e
@@ -128,42 +126,35 @@ spec:
         echo "***** Running Tests *****"
         pytest --version
         pytest
-      args:
-        - "$(params.PYTEST_ARGS)"
+      workingDir: $(workspaces.source.path)
+  workspaces:
+    - name: source
 
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
+  annotations:
+   tekton.dev/categories: Deployment
+    tekton.dev/displayName: deploy image
+    tekton.dev/pipelines.minVersion: 0.17.0
+    tekton.dev/platforms: linux/amd64
+    tekton.dev/tags: 'openshift, deploy'
   name: deploy-image
   labels:
-    app.kubernetes.io/version: "0.1"
-  annotations:
-    tekton.dev/categories: Deployment
-    tekton.dev/pipelines.minVersion: "0.17.0"
-    tekton.dev/tags: openshift, deploy
-    tekton.dev/displayName: "deploy image"
-    tekton.dev/platforms: "linux/amd64"
+    app.kubernetes.io/version: '0.1'
 spec:
-  workspaces:
-  - name: source  
-  description: >-
-    This task will update the deployment.yaml with the latest image name
-    and then apply that yaml file and it's service file.
+  description: This task will update the deployment.yaml with the latest image name and then apply that yaml file and it's service file.
   params:
-  - name: image_name
-    description: The fully qualified name of the new image to deploy
-    type: string
-  - name: manifest_dir
-    description: The directory in source that contains yaml manifests
-    type: string
-    default: "k8s"
+    - description: The fully qualified name of the new image to deploy
+      name: image_name
+      type: string
+    - default: k8s
+      description: The directory in source that contains yaml manifests
+      name: manifest_dir
+      type: string
   steps:
-    - name: deploy
-      image: quay.io/openshift/origin-cli:latest
-      workingDir: /workspace/source 
-      command: ["/bin/bash", "-c"]
-      args:
+    - args:
         - |-
           #!/bin/bash
           set -e
@@ -193,82 +184,91 @@ spec:
           echo "Pods:"
           oc get pods
           echo ""
+      command:
+        - /bin/bash
+        - '-c'
+      computeResources: {}
+      image: 'quay.io/openshift/origin-cli:latest'
+      name: deploy
+      workingDir: /workspace/source
+  workspaces:
+    - name: source
+
 
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
-  name: apply-manifests
-  labels:
-    app.kubernetes.io/version: "0.1"
   annotations:
     tekton.dev/categories: Deployment
-    tekton.dev/pipelines.minVersion: "0.17.0"
-    tekton.dev/tags: openshift, deploy
-    tekton.dev/displayName: "deploy"
-    tekton.dev/platforms: "linux/amd64"
+    tekton.dev/displayName: deploy
+    tekton.dev/pipelines.minVersion: 0.17.0
+    tekton.dev/platforms: linux/amd64
+    tekton.dev/tags: 'openshift, deploy'
+  name: apply-manifests
+  labels:
+    app.kubernetes.io/version: '0.1'
 spec:
-  workspaces:
-  - name: source  
-  description: >-
-    This task will deploy all of the yaml files in the manifest folder.
+  description: This task will deploy all of the yaml files in the manifest folder.
   params:
-  - name: manifest_dir
-    description: The directory in source that contains yaml manifests
-    type: string
-    default: "k8s"
+    - default: k8s
+      description: The directory in source that contains yaml manifests
+      name: manifest_dir
+      type: string
   steps:
-    - name: apply
-      image: quay.io/openshift/origin-cli:latest
-      workingDir: /workspace/source 
-      command: ["/bin/bash", "-c"]
-      args:
+    - args:
         - |-
           echo Applying manifests in $(inputs.params.manifest_dir) directory
           oc apply -f $(inputs.params.manifest_dir)
           echo -----------------------------------
-
----
-apiVersion: tekton.dev/v1beta1
-kind: Task
-metadata:
-  name: behave
-  labels:
-    app.kubernetes.io/version: "0.1"
-  annotations:
-    tekton.dev/categories: Testing
-    tekton.dev/pipelines.minVersion: "0.17.0"
-    tekton.dev/tags: python, bdd, behave
-    tekton.dev/displayName: "bdd tests"
-    tekton.dev/platforms: "linux/amd64"
-spec:
+      command:
+        - /bin/bash
+        - '-c'
+      computeResources: {}
+      image: 'quay.io/openshift/origin-cli:latest'
+      name: apply
+      workingDir: /workspace/source
   workspaces:
     - name: source
-  description: >-
-    This task can be used to perform bdd tests with behave.
+
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  annotations:
+    tekton.dev/categories: Testing
+    tekton.dev/displayName: bdd tests
+    tekton.dev/pipelines.minVersion: 0.17.0
+    tekton.dev/platforms: linux/amd64
+    tekton.dev/tags: 'python, bdd, behave'
+  name: behave
+  labels:
+    app.kubernetes.io/version: '0.1'
+spec:
+  description: This task can be used to perform bdd tests with behave.
   params:
-    - name: BASE_URL
-      description: The url of the application to test
+    - description: The url of the application to test
+      name: BASE_URL
       type: string
-    - name: WAIT_SECONDS
+    - default: '60'
       description: The number of seconds to wait for a reply
+      name: WAIT_SECONDS
       type: string
-      default: "60"
-    - name: DRIVER
+    - default: chrome
       description: The web driver to use (chrome or firefox)
+      name: DRIVER
       type: string
-      default: "chrome"
   steps:
-    - name: behave
-      image: rofrano/pipeline-selenium
-      workingDir: $(workspaces.source.path)
+    - computeResources: {}
       env:
-       - name: BASE_URL
-         value: $(params.BASE_URL)
-       - name: WAIT_SECONDS
-         value: $(params.WAIT_SECONDS)
-       - name: DRIVER
-         value: $(params.DRIVER)
+        - name: BASE_URL
+          value: $(params.BASE_URL)
+        - name: WAIT_SECONDS
+          value: $(params.WAIT_SECONDS)
+        - name: DRIVER
+          value: $(params.DRIVER)
+      image: rofrano/pipeline-selenium
+      name: behave
       script: |
         #!/bin/bash
         set -e
@@ -284,3 +284,7 @@ spec:
 
         echo "***** Running Tests *****"
         behave
+      workingDir: $(workspaces.source.path)
+  workspaces:
+    - name: source
+
