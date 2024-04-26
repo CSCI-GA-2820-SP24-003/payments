@@ -58,53 +58,33 @@ create_model = api.model(
         # pylint: disable=protected-access
         "type": fields.String(
             required=True,
-            # discriminator=True,
             enum=PaymentMethodType._member_names_,
             description="The type of PaymentMethod",
         ),
         "user_id": fields.Integer(
             required=True, description="The user_id of the relevant user"
         ),
+        # credit card fields
+        "first_name": fields.String(required=False, description="The first name on the credit card"),
+        "last_name": fields.String(required=False, description="The last name on the credit card"),
+        "card_number": fields.String(required=False, description="The card number on the credit card"),
+        "expiry_month": fields.Integer(required=False, description="The expected expiration month of the credit card"),
+        "expiry_year": fields.Integer(required=False, description="The expected expiration year of the credit card"),
+        "security_code": fields.String(required=False, description="The security code on the credit card"),
+        "billing_address": fields.String(required=False, description="The billing address of the credit card"),
+        "zip_code": fields.String(required=False, description="The zip code used along with the address for the credit card"),
+        # paypal fields
+        "email": fields.String(required=False, description="Email address that links to a PayPal account"),
     },
 )
-
 payment_method_model = api.inherit(
     "PaymentMethodModel",
     create_model,
     {
-        "id": fields.String(
+        "id": fields.Integer(
             readOnly=True, description="The unique id assigned internally by service"
         ),
-    },
-)
-credit_card_model = api.inherit(
-    "CreditCardModel",
-    create_model,
-    {
-        "id": fields.String(
-            readOnly=True, description="The unique id assigned internally by service"
-        ),
-        "first_name": fields.String(required=True),
-        "last_name": fields.String(required=True),
-        "card_number": fields.String(required=True),
-        "expiry_month": fields.Integer(required=True),
-        "expiry_year": fields.Integer(required=True),
-        "security_code": fields.String(required=True),
-        "billing_address": fields.String(required=True),
-        "zip_code": fields.String(required=True),
-    },
-)
-
-paypal_model = api.inherit(
-    "PaypalModel",
-    create_model,
-    {
-        "id": fields.String(
-            readOnly=True, description="The unique id assigned internally by service"
-        ),
-        "email": fields.String(
-            description="The email associated with a paypal account"
-        ),
+        # "is_default": fields.Boolean(default=False, readOnly=True),
     },
 )
 
@@ -167,7 +147,7 @@ class PaymentResource(Resource):
     ######################################################################
     @api.doc("get_payments")
     @api.response(404, "PaymentMethod not found")
-    # @api.marshal_with(paymentmethod_model)
+    @api.marshal_with(payment_method_model, skip_none=True)
     def get(self, payment_method_id):
         """
         Retrieve a single PaymentMethod
@@ -191,6 +171,8 @@ class PaymentResource(Resource):
     @api.doc("update_payments", security="apikey")
     @api.response(404, "PaymentMethod not found")
     @api.response(400, "The posted PaymentMethod data was not valid")
+    @api.expect(payment_method_model)
+    @api.marshal_with(payment_method_model, skip_none=True)
     def put(self, payment_method_id):
         """
         Update a PaymentMethod
@@ -249,6 +231,7 @@ class PaymentCollection(Resource):
     ######################################################################
     @api.doc("list_payments")
     @api.expect(payment_args, validate=True)
+    @api.marshal_list_with(payment_method_model, skip_none=True)
     def get(self):
         """Returns all of the PaymentMethods"""
         app.logger.info("Request for payment method list")
@@ -275,6 +258,8 @@ class PaymentCollection(Resource):
     ######################################################################
     @api.doc("create_payments", security="apikey")
     @api.response(400, "The posted data was not valid")
+    @api.expect(create_model)
+    @api.marshal_with(payment_method_model, skip_none=True, code=201)
     def post(self):
         """
         Creates Payment Method
@@ -291,7 +276,6 @@ class PaymentCollection(Resource):
 
         if method_type == PaymentMethodType.PAYPAL.value:
             payment_method = PayPal()
-
         # Abort if no type was provided
         if payment_method is None:
             abort(status.HTTP_400_BAD_REQUEST, "PaymentMethod must have a type")
@@ -299,6 +283,7 @@ class PaymentCollection(Resource):
         payment_method.deserialize(body)
         payment_method.create()
         message = payment_method.serialize()
+        print(message)
         location_url = api.url_for(
             PaymentResource, payment_method_id=payment_method.id, _external=True
         )

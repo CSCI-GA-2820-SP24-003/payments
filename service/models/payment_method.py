@@ -117,9 +117,8 @@ class PaymentMethod(db.Model):
         Set a payment method as default for the user and unset others.
         """
         PaymentMethod.query.filter(
-            PaymentMethod.user_id == self.user_id,
-            PaymentMethod.id != self.id
-        ).update({'is_default': False})
+            PaymentMethod.user_id == self.user_id, PaymentMethod.id != self.id
+        ).update({"is_default": False})
 
         self.is_default = True
         self.update()

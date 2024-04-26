@@ -213,7 +213,7 @@ async function onSubmitEditPayment(payload) {
     return Notifications.show({ type: "error", message: data.error });
   }
 
-  addSearchResult(payload, true);
+  addSearchResult(data, true);
   modal.close();
   Notifications.show({
     type: "success",
