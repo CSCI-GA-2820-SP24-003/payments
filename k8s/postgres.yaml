@@ -1,3 +1,5 @@
+# The payment database should be created for you, if not here is the command:
+# psql -c "create database payment;" -U postgres
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -18,23 +20,36 @@ spec:
     spec:
       containers:
         - name: postgres
-          image: "postgres:15-alpine"
+          image: postgres:15-alpine
           ports:
             - containerPort: 5432
               protocol: TCP
-          volumeMounts:
-          - name: postgres-storage
-            mountPath: /data
           env:
             - name: POSTGRES_PASSWORD
-              value: "postgres"
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-creds
+                  key: password
+            - name: POSTGRES_USER
+              valueFrom:
+                  configMapKeyRef:
+                    name: postgres-config
+                    key: postgres_user
+            - name: POSTGRES_DB
+              valueFrom:
+                  configMapKeyRef:
+                    name: postgres-config
+                    key: postgres_db
+          volumeMounts:
+          - name: postgres-storage
+            mountPath: /var/lib/postgresql
           resources:
             limits:
               cpu: "0.50"
-              memory: "238Mi"
-            requests:
-              cpu: "0.25"        
               memory: "128Mi"
+            requests:
+              cpu: "0.25"
+              memory: "64Mi"
       volumes:
       - name: postgres-storage
         persistentVolumeClaim:
@@ -52,7 +67,7 @@ spec:
   resources:
     requests:
       storage: 1Gi
-  storageClassName: "default"
+  # storageClassName: default
 
 ---
 apiVersion: v1
@@ -62,8 +77,19 @@ metadata:
   labels:
     app: postgres
 spec:
-  ports:
-  - port: 5432
-    targetPort: 5432
+  type: ClusterIP
   selector:
     app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+data:
+  postgres_user: postgres
+  postgres_db: payments
+---
