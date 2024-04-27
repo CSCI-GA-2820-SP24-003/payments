@@ -93,3 +93,19 @@ data:
   postgres_user: postgres
   postgres_db: payments
 ---
+# This secret can also be created from the command line using environment variables
+#
+# export DATABASE_URI='postgresql://<place-url-to-database-here>'
+# export POSTGRES_PASSWORD='<place-password-here>'
+#
+# kubectl create secret generic postgres-creds \
+#     --from-literal=password=$POSTGRES_PASSWORD
+#     --from-literal=database_uri=$DATABASE_URI
+#
+kind: Secret
+apiVersion: v1
+metadata:
+  name: postgres-creds
+data:
+  database_uri: cG9zdGdyZXNxbCtwc3ljb3BnOi8vcG9zdGdyZXM6cG9zdGdyZXNAcG9zdGdyZXM6NTQzMi9wb3N0Z3Jlcw==
+  password: cG9zdGdyZXM=
