@@ -24,7 +24,7 @@ This project template contains starter code for your class project. The `/servic
   ### Install instructions
 1. Git clone this repo to your machine
 2. Start VS Code, run the `Dev Containers: Open Folder in Container...` command from the Command Palette (`F1`)
-3. Try `pytest` in the terminal to run tests make sure the environment has been installed correctly.
+3. Try `pytest` in the terminal to run tests make sure the environment has been installed correctly
 </details>
 
 <details>
