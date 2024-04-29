@@ -33,7 +33,7 @@ This project template contains starter code for your class project. The `/servic
 1. Database cannot connect / authentication is wrong.
    - Check that the `DATABASE_URI` being used in the repository matches up and the postgres container is running in docker. You may need to recreate the database.
 2. Can't start up the dev environment on VS Code.
-   - You may need to delete instances of the containers which may have conflicting names with your existing configuration. Alternatively you can also change the config file.
+   - You may need to delete instances of the containers which may have conflicting names with your existing configuration. Alternatively you can also change the config file
 </details>
 
 ## Local Deployment
