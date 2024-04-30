@@ -33,7 +33,7 @@ spec:
             valueFrom:
               secretKeyRef:
                 name: postgres-creds
-                key: uri
+                key: database_uri
           - name: PORT
             value: "8080"
           - name: FLASK_APP
