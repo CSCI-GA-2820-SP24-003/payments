@@ -38,13 +38,13 @@ This project template contains starter code for your class project. The `/servic
 
 ## Local Deployment
 
-To launch deployment, we need to have a docker image in the local registry. Currently, the deployment build uses payments:3.0.
+To launch deployment, we need to have a docker image in the local registry. Currently, the deployment build uses payments:latest.
 
 ```bash
 # build image for local registry if not existing
-docker build -t payments:3.0 .
-docker tag payments:3.0 cluster-registry:32000/payments:3.0
-docker push cluster-registry:32000/payments:3.0
+docker build -t payments:latest.
+docker tag payments:3.0 cluster-registry:32000/payments:latest
+docker push cluster-registry:32000/payments:latest
 
 
 make cluster 
