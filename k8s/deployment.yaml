@@ -22,7 +22,7 @@ spec:
       restartPolicy: Always
       containers:
       - name: payments
-        image: cluster-registry:32000/payments:latest
+        image: cluster-registry:32000/payments:latest #test
         # image: payments
         imagePullPolicy: IfNotPresent
         ports:
